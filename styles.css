@@ -71,6 +71,12 @@ header {
     margin: 5px 0;
 }
 
+.metric-value-big {
+    font-size: 36px;
+    font-weight: 600;
+    margin: 5px 0;
+}
+
 .metric-secondary {
     color: var(--text-secondary);
     font-size: 14px;

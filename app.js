@@ -7,6 +7,9 @@ let gasContract;
 let ethPrice;
 let updateInterval;
 let ethPriceInterval;
+const INIT_MAX_SUPPLY = 21000000;
+const INITIAL_REWARD = 250;
+const HALVING_INTERVAL = 42000;
 
 // ABI Loading
 async function loadABIs() {
@@ -112,6 +115,14 @@ function buildContractCalls() {
         {
             target: GAS_CONTRACT_ADDRESS,
             callData: gasContract.methods.readGasParams(CONTRACT_ADDRESS).encodeABI()
+        },
+        {
+            target: CONTRACT_ADDRESS,
+            callData: contract.methods.minersPerBlockCount(currentBlockCache + 1).encodeABI()
+        },
+        {
+            target: CONTRACT_ADDRESS,
+            callData: contract.methods.maxSupply().encodeABI()
         }
     ];
 }
@@ -126,7 +137,9 @@ function decodeResults(results) {
         halvingInterval: web3.eth.abi.decodeParameter('uint256', results[4]),
         lastHalvingBlock: web3.eth.abi.decodeParameter('uint256', results[5]),
         tokenValue: web3.eth.abi.decodeParameter('uint256', results[6]),
-        gasParams: web3.eth.abi.decodeParameters(['uint256', 'uint256'], results[7])
+        gasParams: web3.eth.abi.decodeParameters(['uint256', 'uint256'], results[7]),
+        minersCount: web3.eth.abi.decodeParameter('uint256', results[8]),
+        maxSupply: web3.eth.abi.decodeParameter('uint256', results[9])
     };
 }
 
@@ -163,19 +176,32 @@ function updateUI(values, tvlEth) {
     const {
         blockNumber, minerReward, minersCount, lastBlockTime,
         intrinsicValueEth, intrinsicValueUsd,
-        theoreticalValueEth, theoreticalValueUsd
+        theoreticalValueEth, theoreticalValueUsd,
+        maxSupply, totalSupply
     } = values;
 
     document.getElementById('lastBlock').textContent = blockNumber;
-    document.getElementById('totalSupply').textContent = formatNumber(web3.utils.fromWei(values.totalSupply, 'ether'));
+    document.getElementById('totalSupply').textContent = formatNumber(Math.round(totalSupply/1e18));
     document.getElementById('minerReward').textContent = web3.utils.fromWei(minerReward, 'ether');
-    document.getElementById('minersCount').textContent = minersCount;
+    document.getElementById('minersCount').textContent = currentBlockCache == 0 ? '...' : minersCount;
     
     document.getElementById('intrinsicValue').textContent = intrinsicValueUsd;
     document.getElementById('intrinsicValueEth').textContent = intrinsicValueEth;
     document.getElementById('theoreticalValue').textContent = theoreticalValueUsd;
     document.getElementById('theoreticalValueEth').textContent = theoreticalValueEth;
     document.getElementById('tvl').textContent = parseFloat(tvlEth).toFixed(2);
+    document.getElementById('tvlUsd').textContent = formatNumber(Math.round(parseFloat(tvlEth) * ethPrice));
+    document.getElementById('maxSupply').textContent = formatNumber(maxSupply/1e18);
+
+    // Update mined tokens metric
+    const burned = calculateBurnedTokens(maxSupply/1e18);
+    document.getElementById('burnedAmount').textContent = formatNumber(Math.round(burned.amount));
+    document.getElementById('burnedPercentage').textContent = burned.percentage;
+
+    const mined = calculateMinedTokens(burned.amount, totalSupply/1e18);
+    document.getElementById('minedPercentage').textContent = mined.percentage;
+    document.getElementById('minedAmount').textContent = formatNumber(Math.round(mined.amount));
+
 }
 
 // Time Updates
@@ -184,12 +210,26 @@ function updateLastBlockTime(lastBlockTime) {
     document.getElementById('lastBlockTime').textContent = `${secondsAgo}s`;
 }
 
-function updateNextHalving(currentBlock, lastHalvingBlock, halvingInterval) {
-    const blocksUntilHalving = (parseInt(lastHalvingBlock) + parseInt(halvingInterval)) - currentBlock;
-    const hoursUntilHalving = Math.floor(blocksUntilHalving * 60 / 3600);
-    document.getElementById('nextHalving').textContent = hoursUntilHalving;
+function formatTimeUntil(hours) {
+    const days = Math.floor(hours / 24);
+    const remainingHours = hours % 24;
+    const minutes = Math.floor((remainingHours % 1) * 60);
+
+    let result = '';
+    if (days > 0) result += `${days}d `;
+    if (remainingHours > 0) result += `${Math.floor(remainingHours)}h `;
+    if (minutes > 0) result += `${minutes}m`;
+    
+    return result.trim() || '0m';
 }
 
+function updateNextHalving(currentBlock, lastHalvingBlock, halvingInterval) {
+    const blocksUntilHalving = (parseInt(lastHalvingBlock) + parseInt(halvingInterval)) - currentBlock;
+    const hoursUntilHalving = blocksUntilHalving * 60 / 3600; // 60 seconds per block
+    document.getElementById('nextHalving').textContent = formatTimeUntil(hoursUntilHalving);
+}
+
+let currentBlockCache = 0;
 // Main Update Function
 async function updateAllMetrics() {
     try {
@@ -198,15 +238,15 @@ async function updateAllMetrics() {
         const decoded = decodeResults(results);
         
         const tvlEth = await calculateTVL(decoded.gasParams);
-        const nextBlock = parseInt(decoded.blockNumber) + 1;
-        const minersCount = await contract.methods.minersPerBlockCount(nextBlock).call();
         
         const values = calculateValues(decoded.tokenValue, decoded.totalSupply, tvlEth);
         
-        updateUI({ ...decoded, ...values, minersCount }, tvlEth);
+        updateUI({ ...decoded, ...values }, tvlEth);
         updateLastBlockTime(decoded.lastBlockTime);
         updateNextHalving(decoded.blockNumber, decoded.lastHalvingBlock, decoded.halvingInterval);
 
+        currentBlockCache = parseInt(decoded.blockNumber);
+        
         console.log('Contract State:', { 
             ...decoded, 
             tvlEth, 
@@ -252,6 +292,28 @@ async function init() {
 
 function formatNumber(num) {
     return new Intl.NumberFormat('en-US').format(parseFloat(num));
+}
+
+function calculateMinedTokens(burnedAmount, totalSupply) {
+    let totalMined = burnedAmount + totalSupply;
+    
+    const percentage = (totalMined / INIT_MAX_SUPPLY) * 100;
+
+    return {
+        amount: totalMined,
+        percentage: percentage.toFixed(2)
+    };
+}
+
+// Fix the burned tokens calculation
+function calculateBurnedTokens(maxSupply) {
+    const burnedAmount = INIT_MAX_SUPPLY - maxSupply;
+    const burnedPercentage = (burnedAmount / INIT_MAX_SUPPLY) * 100;
+    
+    return {
+        amount: burnedAmount,
+        percentage: burnedPercentage.toFixed(2)
+    };
 }
 
 // Initialize
