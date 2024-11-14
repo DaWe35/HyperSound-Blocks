@@ -164,14 +164,8 @@ button:hover {
     margin: 25px 0 25px 0;
 }
 
-.block a {
+a {
     color: white;
-    text-decoration: none;
-}
-
-.block a:hover {
-    color: white;
-    text-decoration: underline;
 }
 
 .block:hover {
@@ -244,7 +238,8 @@ button:hover {
 
 .miner-item {
     background: rgba(255, 255, 255, 0.05);
-    padding: 10px;
+    padding: 20px 30px;
+    text-align: center;
     border-radius: 4px;
-    font-size: 14px;
+    font-size: 20px;
 } 

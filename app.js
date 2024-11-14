@@ -309,7 +309,15 @@ async function loadBlock(blockNumber) {
 }
 
 function formatAddress(address) {
-    return address.substring(38);
+    switch (address) {
+        case '0xb82619C0336985e3EDe16B97b950E674018925Bb':
+            return 'KONKPool';
+        case '0x2099A5d5DA9db8a91a21b7a1Cf7f969a5D078C15':
+        case '0x6B8c262CA939adbe3793D3eca519a9D64f74D184':
+            return 'Machi';
+        default:
+            return address.substring(38);
+    }
 }
 
 function createBlockElement(data) {
@@ -331,7 +339,7 @@ function createBlockElement(data) {
         </a>
     `;
     
-    block.onclick = () => showBlockMiners(data.blockNumber);
+    block.onclick = () => showBlockMiners(data.blockNumber, data.minersCount);
     return block;
 }
 
@@ -352,38 +360,84 @@ function createPendingBlockElement() {
         </div>
     `;
     
-    block.onclick = () => showBlockMiners(null);
+    block.onclick = () => showBlockMiners(document.getElementById('lastBlock').textContent, document.getElementById('pendingBlockMinerCount').textContent);
     return block;
 }
 
-async function showBlockMiners(blockNumber) {
+async function getBlockMiners(blockNumber, totalMiners) {
+    const BATCH_SIZE = 100; // Number of miners to fetch per multicall
+    const miners = {};
+    
+    try {
+        // Calculate number of batches needed
+        const batchCount = Math.ceil(totalMiners / BATCH_SIZE);
+        
+        for (let batchIndex = 0; batchIndex < batchCount; batchIndex++) {
+            const startIndex = batchIndex * BATCH_SIZE;
+            const endIndex = Math.min(startIndex + BATCH_SIZE, totalMiners);
+            
+            // Build calls for this batch
+            const calls = [];
+            for (let minerIndex = startIndex; minerIndex < endIndex; minerIndex++) {
+                calls.push({
+                    target: CONTRACT_ADDRESS,
+                    callData: contract.methods.minersPerBlock(blockNumber, minerIndex).encodeABI()
+                });
+            }
+            
+            // Execute multicall for this batch
+            const results = await multicall(calls);
+            
+            // Decode results and add to miners array
+            for (let i = 0; i < results.length; i++) {
+                const minerAddress = web3.eth.abi.decodeParameter('address', results[i]);
+                miners[minerAddress] = (miners[minerAddress] || 0) + 1;
+            }
+            
+            console.log(`Loaded miners ${startIndex} to ${endIndex} for block ${blockNumber}`);
+        }
+        console.log(miners);
+        return miners;
+        
+    } catch (error) {
+        console.error(`Error fetching miners for block ${blockNumber}:`, error);
+        return [];
+    }
+}
+
+async function showBlockMiners(blockNumber, minersCount) {
     const blockDetails = document.getElementById('blockDetails');
-    
-    // Toggle active state
     document.querySelectorAll('.block').forEach(b => b.classList.remove('active'));
+    if (blockNumber === null) return;
 
-    // Mock miners data - replace with actual contract call
-    const miners = Array.from({ length: 20 }, (_, i) => ({
-        address: `0x${Array(40).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('')}`,
-        stake: Math.floor(Math.random() * 1000)
-    }));
+    try {
+        const miners = await getBlockMiners(blockNumber, parseInt(minersCount));
 
-    const minersHTML = miners.map(m => `
-        <div class="miner-item">
-            <div>${m.address.substring(0, 6)}...${m.address.substring(38)}</div>
-            <div>${m.stake} $HYPERS</div>
-        </div>
-    `).join('');
+        // Convert object to array of entries and sort by count
+        const minersArray = Object.entries(miners)
+            .sort((a, b) => b[1] - a[1]) // Sort by count descending
+            .map(([address, count]) => `
+                <div class="miner-item">
+                    <span class="miner-count">${count}</span>
+                    <span class="mdi mdi-pickaxe"></span>
+                    <br>
+                    <a href="https://blastscan.io/address/${address}" target="_blank">
+                        ${formatAddress(address)}
+                    </a>
+                </div>
+            `).join('');
 
-    blockDetails.innerHTML = `
-        <h3>Block #${blockNumber} Miners</h3>
-        <div class="miners-list">
-            ${minersHTML}
-        </div>
-    `;
-    
-    blockDetails.classList.add('active');
-    document.querySelector(`.block:has(.block-number:contains('#${blockNumber}'))`).classList.add('active');
+        blockDetails.innerHTML = `
+            <h3>Block #${blockNumber} Miners (${minersCount})</h3>
+            <div class="miners-list">
+                ${minersArray}
+            </div>
+        `;
+        
+        blockDetails.classList.add('active');
+    } catch (error) {
+        console.error('Error showing block miners:', error);
+    }
 }
 
 // Main Update Function
