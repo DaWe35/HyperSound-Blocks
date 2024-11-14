@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HyperSound Money</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <img src="https://hypers.money/assets/logo.15749a53.png" alt="Logo" class="logo-img">
+                <h1>HyperSound Explorer</h1>
+                <a href="https://blastscan.io/address/0xF8797dB8a9EeD416Ca14e8dFaEde2BF4E1aabFC3" 
+                   target="_blank" 
+                   class="contract-link">
+                    0xF879...FC3
+                </a>
+            </div>
+        </header>
+
+        <div class="metrics-container">
+            <div class="metric">
+                <div class="metric-label">
+                    INTRINSIC VALUE
+                    <span class="info-icon">ⓘ</span>
+                </div>
+                <div class="metric-value">$<span id="intrinsicValue">...</span></div>
+                <div class="metric-secondary" id="intrinsicValueEth">...</div>
+            </div>
+
+            <div class="metric">
+                <div class="metric-label">
+                    THEORETICAL VALUE
+                    <span class="info-icon">ⓘ</span>
+                </div>
+                <div class="metric-value">$<span id="theoreticalValue">...</span></div>
+                <div class="metric-secondary" id="theoreticalValueEth">...</div>
+            </div>
+
+            <div class="metric">
+                <div class="metric-label">
+                    TVL
+                    <span class="info-icon">ⓘ</span>
+                </div>
+                <div class="metric-value"><span id="tvl">...</span></div>
+            </div>
+
+            <div class="metric">
+                <div class="metric-label">LAST BLOCK</div>
+                <div class="metric-value"><span id="lastBlock">...</span></div>
+            </div>
+
+            <div class="metric">
+                <div class="metric-label">MINER REWARD</div>
+                <div class="metric-value"><span id="minerReward">...</span></div>
+            </div>
+
+            <div class="metric">
+                <div class="metric-label">TOTAL SUPPLY</div>
+                <div class="metric-value"><span id="totalSupply">...</span></div>
+            </div>
+
+            <div class="metric">
+                <div class="metric-label">NEXT HALVING</div>
+                <div class="metric-value">~<span id="nextHalving">...</span> hours</div>
+            </div>
+
+            <div class="metric">
+                <div class="metric-label">LAST BLOCK TIME</div>
+                <div class="metric-value"><span id="lastBlockTime">...</span> ago</div>
+            </div>
+
+            <div class="metric">
+                <div class="metric-label">MINERS IN CURRENT BLOCK</div>
+                <div class="metric-value"><span id="minersCount">...</span></div>
+            </div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
