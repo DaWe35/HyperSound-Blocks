@@ -84,10 +84,28 @@
 
             <div class="metric">
                 <div class="metric-label">MINERS IN CURRENT BLOCK</div>
-                <div class="metric-value-big"><span id="minersCount">...</span></div>
+                <div class="metric-value-big">
+                    <span id="minersCount">...</span>
+                    <span class="mdi mdi-pickaxe"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="blocks-section">
+            <h2>Blocks</h2>
+            <div class="blocks-container">
+                <div class="blocks-scroll" id="blocksScroll">
+                    <!-- Blocks will be added here dynamically -->
+                </div>
+            </div>
+            <div class="block-details" id="blockDetails">
+                <!-- Miners list will appear here when a block is clicked -->
             </div>
         </div>
     </div>
     <script src="app.js"></script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css">
+
 </body>
 </html>

@@ -182,7 +182,7 @@ function updateUI(values, tvlEth) {
 
     document.getElementById('lastBlock').textContent = blockNumber;
     document.getElementById('totalSupply').textContent = formatNumber(Math.round(totalSupply/1e18));
-    document.getElementById('minerReward').textContent = web3.utils.fromWei(minerReward, 'ether');
+    document.getElementById('minerReward').textContent = minerReward/1e18;
     document.getElementById('minersCount').textContent = currentBlockCache == 0 ? '...' : minersCount;
     
     document.getElementById('intrinsicValue').textContent = intrinsicValueUsd;
@@ -202,12 +202,21 @@ function updateUI(values, tvlEth) {
     document.getElementById('minedPercentage').textContent = mined.percentage;
     document.getElementById('minedAmount').textContent = formatNumber(Math.round(mined.amount));
 
+    const secondsAgo = Math.floor((Date.now() / 1000) - lastBlockTime);
+    document.getElementById('lastBlockTime').textContent = `${secondsAgo}s`;
+
+
+    // Update pending block
+    if (currentBlockCache !== 0) {
+        // document.getElementById('pendingBlockNumber').textContent = currentBlockCache + 1;
+        document.getElementById('pendingBlockMinerCount').textContent = minersCount;
+        document.getElementById('pendingBlockReward').textContent = minerReward/1e18;
+        document.getElementById('pendingBlockWinner').textContent = `${secondsAgo}s`;
+    }
 }
 
 // Time Updates
 function updateLastBlockTime(lastBlockTime) {
-    const secondsAgo = Math.floor((Date.now() / 1000) - lastBlockTime);
-    document.getElementById('lastBlockTime').textContent = `${secondsAgo}s`;
 }
 
 function formatTimeUntil(hours) {
@@ -229,7 +238,154 @@ function updateNextHalving(currentBlock, lastHalvingBlock, halvingInterval) {
     document.getElementById('nextHalving').textContent = formatTimeUntil(hoursUntilHalving);
 }
 
+async function getWinner(blockNumber) {
+    if (blockNumber > currentBlockCache) return null;
+    return '0x0000000000000000000000000000000000000000';
+}
+
+async function getMiner(blockNumber) {
+    if (blockNumber > currentBlockCache) return null;
+    return '0x0000000000000000000000000000000000000000';
+}
+
+function calculateReward(blockNumber) {
+    // Initial reward is 250 HYPERS
+    let reward = 250;
+    
+    const halvings = Math.floor(blockNumber / HALVING_INTERVAL);
+    
+    // Reduce reward by half for each halving that has occurred
+    for (let i = 0; i < halvings; i++) {
+        reward = reward / 2;
+    }
+    return reward;
+}
+
 let currentBlockCache = 0;
+let loadedBlocks = new Set();
+
+async function loadBlock(blockNumber) {
+    if (loadedBlocks.has(blockNumber)) return;
+    
+    try {
+        // Get block data
+        const minersCount = await contract.methods.minersPerBlockCount(blockNumber).call();
+        const winner = await getWinner(blockNumber);
+        const reward = calculateReward(blockNumber);
+        const miner = await getMiner(blockNumber);
+
+        const blockElement = createBlockElement({
+            blockNumber,
+            minersCount,
+            winner: winner,
+            reward: reward,
+            miner: miner
+        });
+
+        // Find the correct position to insert the block
+        const blocksScroll = document.getElementById('blocksScroll');
+        const existingBlocks = blocksScroll.children;
+        let inserted = false;
+
+        // Insert in descending order (newest first)
+        for (let i = 1; i < existingBlocks.length; i++) {
+            const existingBlockNumber = parseInt(existingBlocks[i].querySelector('.block-number').textContent.slice(1));
+            if (blockNumber > existingBlockNumber) {
+                blocksScroll.insertBefore(blockElement, existingBlocks[i]);
+                inserted = true;
+                break;
+            }
+        }
+
+        // If not inserted (oldest block), append at the end
+        if (!inserted) {
+            blocksScroll.appendChild(blockElement);
+        }
+
+        loadedBlocks.add(blockNumber);
+    } catch (error) {
+        console.error(`Error loading block ${blockNumber}:`, error);
+    }
+}
+
+function formatAddress(address) {
+    return address.substring(38);
+}
+
+function createBlockElement(data) {
+
+    const block = document.createElement('div');
+    block.className = 'block';
+    block.innerHTML = `
+        <div class="block-number">#${data.blockNumber}</div>
+        <div class="block-miner-count">
+            ${data.minersCount}
+            <span class="mdi mdi-pickaxe"></span>
+        </div>
+        <a href="https://blastscan.io/address/${data.winner}" target="_blank">
+            <div class="block-winner">${formatAddress(data.winner)}</div>
+        </a>
+        <div class="block-reward">${data.reward} $HYPERS</div>
+        <a href="https://blastscan.io/address/${data.miner}" target="_blank">
+            <div class="block-miner">${formatAddress(data.miner)}</div>
+        </a>
+    `;
+    
+    block.onclick = () => showBlockMiners(data.blockNumber);
+    return block;
+}
+
+function createPendingBlockElement() {
+    const block = document.createElement('div');
+    block.className = 'block';
+    block.id = 'pendingBlock';
+    block.innerHTML = `
+        <div class="block-number" id="pendingBlockNumber">Pending block</div>
+        <div class="block-miner-count">
+            <span id="pendingBlockMinerCount">...</span>
+            <span class="mdi mdi-pickaxe"></span>
+        </div>
+        <div class="block-winner" id="pendingBlockWinner">...</div>
+        <div class="block-reward">
+            <span id="pendingBlockReward">...</span>
+            $HYPERS
+        </div>
+    `;
+    
+    block.onclick = () => showBlockMiners(null);
+    return block;
+}
+
+async function showBlockMiners(blockNumber) {
+    const blockDetails = document.getElementById('blockDetails');
+    
+    // Toggle active state
+    document.querySelectorAll('.block').forEach(b => b.classList.remove('active'));
+
+    // Mock miners data - replace with actual contract call
+    const miners = Array.from({ length: 20 }, (_, i) => ({
+        address: `0x${Array(40).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('')}`,
+        stake: Math.floor(Math.random() * 1000)
+    }));
+
+    const minersHTML = miners.map(m => `
+        <div class="miner-item">
+            <div>${m.address.substring(0, 6)}...${m.address.substring(38)}</div>
+            <div>${m.stake} $HYPERS</div>
+        </div>
+    `).join('');
+
+    blockDetails.innerHTML = `
+        <h3>Block #${blockNumber} Miners</h3>
+        <div class="miners-list">
+            ${minersHTML}
+        </div>
+    `;
+    
+    blockDetails.classList.add('active');
+    document.querySelector(`.block:has(.block-number:contains('#${blockNumber}'))`).classList.add('active');
+}
+
 // Main Update Function
 async function updateAllMetrics() {
     try {
@@ -247,6 +403,12 @@ async function updateAllMetrics() {
 
         currentBlockCache = parseInt(decoded.blockNumber);
         
+        // Load latest blocks
+        const currentBlock = parseInt(decoded.blockNumber);
+        for (let i = 0; i < 10; i++) {
+            await loadBlock(currentBlock - i);
+        }
+
         console.log('Contract State:', { 
             ...decoded, 
             tvlEth, 
@@ -279,8 +441,10 @@ async function init() {
         web3 = new Web3('https://rpc.blast.io');
         contract = new web3.eth.Contract(contractABI, CONTRACT_ADDRESS);
         gasContract = new web3.eth.Contract(gasABI, GAS_CONTRACT_ADDRESS);
-        
+        const pendingBlock = createPendingBlockElement();
+        document.getElementById('blocksScroll').appendChild(pendingBlock);
         await updateAllMetrics();
+        initializeInfiniteScroll();
         updateInterval = setInterval(updateAllMetrics, 1000);
         ethPriceInterval = setInterval(async () => {
             ethPrice = await getEthPrice();
@@ -314,6 +478,34 @@ function calculateBurnedTokens(maxSupply) {
         amount: burnedAmount,
         percentage: burnedPercentage.toFixed(2)
     };
+}
+
+// Remove the load more button from HTML
+
+// Remove the load more button event listener and add scroll detection
+function initializeInfiniteScroll() {
+    const blocksContainer = document.querySelector('.blocks-container');
+    let isLoading = false;
+
+    blocksContainer.addEventListener('scroll', async () => {
+        // Check if we're near the right edge (where older blocks are)
+        const scrollLeft = blocksContainer.scrollLeft;
+        const scrollWidth = blocksContainer.scrollWidth;
+        const clientWidth = blocksContainer.clientWidth;
+        
+        // Load more when we're within 20% of the right edge
+        if (!isLoading && (scrollWidth - (scrollLeft + clientWidth)) / clientWidth < 0.2) {
+            isLoading = true;
+            
+            const oldestBlock = Math.min(...Array.from(loadedBlocks));
+            // Load older blocks
+            for (let i = 1; i <= 5; i++) {
+                await loadBlock(oldestBlock - i);
+            }
+            
+            isLoading = false;
+        }
+    });
 }
 
 // Initialize

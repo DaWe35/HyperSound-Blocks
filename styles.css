@@ -128,4 +128,123 @@ button:hover {
 .contract-link:hover {
     background-color: rgba(255, 255, 255, 0.1);
     color: var(--text-primary);
+}
+
+.blocks-section {
+    margin-top: 40px;
+}
+
+.blocks-section h2 {
+    color: var(--text-primary);
+    margin-bottom: 20px;
+}
+
+.blocks-container {
+    position: relative;
+    overflow-x: auto;
+    padding: 20px 0;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+}
+
+.blocks-scroll {
+    display: flex;
+    gap: 20px;
+    padding: 0 20px;
+}
+
+.block {
+    min-width: 200px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    margin: 25px 0 25px 0;
+}
+
+.block a {
+    color: white;
+    text-decoration: none;
+}
+
+.block a:hover {
+    color: white;
+    text-decoration: underline;
+}
+
+.block:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.block.active {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.block-number {
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.block-miner-count {
+    font-size: 32px;
+    font-weight: bold;
+    text-align: center;
+    margin: 10px 0;
+}
+
+.block-winner {
+    font-size: 20px;
+    text-align: center;
+    margin: 5px 0;
+}
+
+.block-reward {
+    text-align: center;
+    font-size: 14px;
+    margin: 5px 0;
+    color: var(--text-secondary);
+}
+
+.block-miner {
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--text-secondary);
+    font-size: 12px;
+    word-break: break-all;
+    text-align: center;
+}
+
+.block-details {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+.block-details.active {
+    max-height: 500px;
+    padding: 20px;
+}
+
+.miners-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+}
+
+.miner-item {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 14px;
 } 
