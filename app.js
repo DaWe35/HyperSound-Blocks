@@ -112,10 +112,6 @@ function buildContractCalls() {
         {
             target: GAS_CONTRACT_ADDRESS,
             callData: gasContract.methods.readGasParams(CONTRACT_ADDRESS).encodeABI()
-        },
-        {
-            target: CONTRACT_ADDRESS,
-            callData: contract.methods.feesPool().encodeABI()
         }
     ];
 }
@@ -130,8 +126,7 @@ function decodeResults(results) {
         halvingInterval: web3.eth.abi.decodeParameter('uint256', results[4]),
         lastHalvingBlock: web3.eth.abi.decodeParameter('uint256', results[5]),
         tokenValue: web3.eth.abi.decodeParameter('uint256', results[6]),
-        gasParams: web3.eth.abi.decodeParameters(['uint256', 'uint256'], results[7]),
-        feesPool: web3.eth.abi.decodeParameter('uint256', results[8])
+        gasParams: web3.eth.abi.decodeParameters(['uint256', 'uint256'], results[7])
     };
 }
 
