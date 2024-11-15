@@ -168,6 +168,7 @@ button:hover {
     display: flex;
     gap: 20px;
     padding: 0 calc(50vw - 220px);
+    position: relative;
 }
 
 .block {
@@ -176,11 +177,40 @@ button:hover {
     border-radius: 8px;
     padding: 20px;
     cursor: pointer;
-    transition: all 0.2s;
     position: relative;
     margin: 25px 0 25px 0;
     border: 1px solid rgba(255, 255, 255, 0);
     --fill-percentage: 100%;
+    transition: transform 2s ease-out;
+}
+
+/* Animation for new blocks */
+.block.slide-in {
+    animation: slideIn 2s ease-out forwards;
+}
+
+.block.fade-in {
+    animation: fadeIn 2s ease-out forwards;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-220px);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-220px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 #pendingBlock {

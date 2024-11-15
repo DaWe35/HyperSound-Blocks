@@ -180,11 +180,13 @@ function updateUI(values, tvlEth) {
         maxSupply, totalSupply
     } = values;
 
+    // Update metrics
     document.getElementById('lastBlock').textContent = blockNumber;
     document.getElementById('totalSupply').textContent = formatNumber(Math.round(totalSupply/1e18));
     document.getElementById('minerReward').textContent = minerReward/1e18;
     document.getElementById('minersCount').textContent = currentBlockCache == 0 ? '...' : minersCount;
     
+    // Update values
     document.getElementById('intrinsicValue').textContent = intrinsicValueUsd;
     document.getElementById('intrinsicValueEth').textContent = intrinsicValueEth;
     document.getElementById('theoreticalValue').textContent = theoreticalValueUsd;
@@ -193,7 +195,7 @@ function updateUI(values, tvlEth) {
     document.getElementById('tvlUsd').textContent = formatNumber(Math.round(parseFloat(tvlEth) * ethPrice));
     document.getElementById('maxSupply').textContent = formatNumber(maxSupply/1e18);
 
-    // Update mined tokens metric
+    // Update tokens metrics
     const burned = calculateBurnedTokens(maxSupply/1e18);
     document.getElementById('burnedAmount').textContent = formatNumber(Math.round(burned.amount));
     document.getElementById('burnedPercentage').textContent = burned.percentage;
@@ -202,6 +204,7 @@ function updateUI(values, tvlEth) {
     document.getElementById('minedPercentage').textContent = mined.percentage;
     document.getElementById('minedAmount').textContent = formatNumber(Math.round(mined.amount));
 
+    // Update time metrics
     const secondsAgo = Math.floor((Date.now() / 1000) - lastBlockTime);
     document.getElementById('lastBlockTime').textContent = `${secondsAgo}s`;
     updatePendingBlockProgress(secondsAgo);
@@ -264,58 +267,95 @@ async function loadBlock(blockNumber) {
     if (loadedBlocks.has(blockNumber)) return;
     
     try {
-        // Get block data
-        const minersCount = await contract.methods.minersPerBlockCount(blockNumber).call();
-        const winner = await getWinner(blockNumber);
-        const reward = calculateReward(blockNumber);
-        const miner = await getMiner(blockNumber);
-
-        const blockElement = createBlockElement({
-            blockNumber,
-            minersCount,
-            winner: winner,
-            reward: reward,
-            miner: miner
-        });
-
-        // Find the correct position to insert the block
-        const blocksScroll = document.getElementById('blocksScroll');
-        const existingBlocks = blocksScroll.children;
-        let inserted = false;
-
-        // Insert in descending order (newest first)
-        for (let i = 1; i < existingBlocks.length; i++) {
-            const existingBlockNumber = parseInt(existingBlocks[i].querySelector('.block-number').textContent.slice(1));
-            if (blockNumber > existingBlockNumber) {
-                blocksScroll.insertBefore(blockElement, existingBlocks[i]);
-                inserted = true;
-                break;
-            }
-        }
-
-        // If not inserted (oldest block), append at the end
-        if (!inserted) {
-            blocksScroll.appendChild(blockElement);
-        }
-
+        const blockData = await fetchBlockData(blockNumber);
+        const blockElement = createBlockElement(blockData);
+        insertBlockIntoDOM(blockElement, blockNumber);
         loadedBlocks.add(blockNumber);
     } catch (error) {
         console.error(`Error loading block ${blockNumber}:`, error);
     }
 }
 
-function formatAddress(address) {
-    switch (address) {
-        case 'pending':
-            return 'Pending...';
-        case '0xb82619C0336985e3EDe16B97b950E674018925Bb':
-            return 'KONKPool';
-        case '0x2099A5d5DA9db8a91a21b7a1Cf7f969a5D078C15':
-        case '0x6B8c262CA939adbe3793D3eca519a9D64f74D184':
-            return 'Machi';
-        default:
-            return address.substring(38);
+async function fetchBlockData(blockNumber) {
+    const [minersCount, winner, miner] = await Promise.all([
+        contract.methods.minersPerBlockCount(blockNumber).call(),
+        getWinner(blockNumber),
+        getMiner(blockNumber)
+    ]);
+
+    return {
+        blockNumber,
+        minersCount,
+        winner,
+        reward: calculateReward(blockNumber),
+        miner
+    };
+}
+
+function insertBlockIntoDOM(blockElement, blockNumber) {
+    const blocksScroll = document.getElementById('blocksScroll');
+    const existingBlocks = Array.from(blocksScroll.children);
+    
+    const isNewBlock = isNewerThanExisting(blockNumber, existingBlocks);
+
+    if (isNewBlock) {
+        insertNewBlock(blockElement, existingBlocks, blocksScroll);
+    } else {
+        insertHistoricalBlock(blockElement, existingBlocks, blocksScroll);
     }
+}
+
+function isNewerThanExisting(blockNumber, existingBlocks) {
+    return existingBlocks.length > 1 && 
+        blockNumber > parseInt(existingBlocks[1].querySelector('.block-number').textContent.slice(1));
+}
+
+function insertNewBlock(blockElement, existingBlocks, blocksScroll) {
+    // Reset any existing animations
+    existingBlocks.forEach(block => {
+        block.classList.remove('slide-in');
+        block.classList.remove('fade-in');
+        void(block.offsetWidth); // Trigger CSS reflow
+    });
+    
+    // Add new block with animations
+    blockElement.classList.add('fade-in');
+    blocksScroll.insertBefore(blockElement, existingBlocks[1]);
+    
+    // Animate existing blocks
+    existingBlocks.slice(1).forEach(block => {
+        block.classList.add('slide-in');
+    });
+}
+
+function insertHistoricalBlock(blockElement, existingBlocks, blocksScroll) {
+    const insertIndex = findInsertPosition(blockElement, existingBlocks);
+    
+    if (insertIndex > 0) {
+        blocksScroll.insertBefore(blockElement, existingBlocks[insertIndex]);
+    } else {
+        blocksScroll.appendChild(blockElement);
+    }
+}
+
+function findInsertPosition(blockElement, existingBlocks) {
+    return existingBlocks.findIndex(block => {
+        const existingBlockNumber = parseInt(block.querySelector('.block-number').textContent.slice(1));
+        const newBlockNumber = parseInt(blockElement.querySelector('.block-number').textContent.slice(1));
+        return newBlockNumber > existingBlockNumber;
+    });
+}
+
+function formatAddress(address) {
+    if (address === 'pending') return 'Pending...';
+    
+    const knownAddresses = {
+        '0xb82619C0336985e3EDe16B97b950E674018925Bb': 'KONKPool',
+        '0x2099A5d5DA9db8a91a21b7a1Cf7f969a5D078C15': 'Machi',
+        '0x6B8c262CA939adbe3793D3eca519a9D64f74D184': 'Machi'
+    };
+    
+    return knownAddresses[address] || address.substring(38);
 }
 
 function createBlockElement(data) {
@@ -477,7 +517,6 @@ async function updateAllMetrics() {
         const decoded = decodeResults(results);
         
         const tvlEth = await calculateTVL(decoded.gasParams);
-        
         const values = calculateValues(decoded.tokenValue, decoded.totalSupply, tvlEth);
         
         updateUI({ ...decoded, ...values }, tvlEth);
