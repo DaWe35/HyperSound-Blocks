@@ -370,9 +370,7 @@ function createBlockElement(data) {
         </div>
         <div class="block-winner">${formatAddress(data.winner)}</div>
         <div class="block-reward">${data.reward} $HYPERS</div>
-        <a href="https://blastscan.io/address/${data.miner}" target="_blank">
-            <div class="block-miner">${formatAddress(data.miner)}</div>
-        </a>
+        <div class="block-miner">${formatAddress(data.miner)}</div>
     `;
     
     block.onclick = () => showBlockMiners(data.blockNumber, data.minersCount);
@@ -384,7 +382,7 @@ function createPendingBlockElement() {
     block.className = 'block';
     block.id = 'pendingBlock';
     block.innerHTML = `
-        <div class="block-number" id="pendingBlockNumber">Pending block</div>
+        <div class="block-number" id="pendingBlockNumber"></div>
         <div class="block-miner-count">
             <span id="pendingBlockMinerCount">...</span>
             <span class="mdi mdi-pickaxe"></span>
@@ -394,6 +392,7 @@ function createPendingBlockElement() {
             <span id="pendingBlockReward">...</span>
             $HYPERS
         </div>
+        <div class="block-miner">Pending block</div>
     `;
     
     block.onclick = () => showBlockMiners(parseInt(document.getElementById('lastBlock').textContent) + 1, parseInt(document.getElementById('pendingBlockMinerCount').textContent));
@@ -497,8 +496,8 @@ async function renderBlockDetails(blockNumber, minersCount, miners) {
     const miner = await getMiner(blockNumber);
     const displayBlockNumber = blockNumber > currentBlockCache ? 'Pending block...' : `Block #${blockNumber}`;
     return `
-        <h2>${displayBlockNumber}</h2>
-        <p>Miners: ${minersCount}</p>
+        <p>Block #${blockNumber > currentBlockCache ? 'pending' : blockNumber}</p>
+        <p>Miners in block: ${minersCount} <span class="mdi mdi-pickaxe"></span></p>
         <p>Winner: <a href="https://blastscan.io/address/${winner}" target="_blank">${formatAddress(winner)}</a></p>
         <p>Reward: ${reward} $HYPERS</p>
         <p>Miner: <a href="https://blastscan.io/address/${miner}" target="_blank">${formatAddress(miner)}</a></p>
@@ -509,7 +508,7 @@ async function renderBlockDetails(blockNumber, minersCount, miners) {
 }
 
 // Main Update Function
-let currentMinerCache = 0;
+let currentMinerCache = null;
 async function updateAllMetrics() {
     try {
         const calls = buildContractCalls();
@@ -686,7 +685,7 @@ function updatePendingBlockProgress(secondsAgo) {
     if (!pendingBlock) return;
     
     // Calculate fill percentage (100% at 0s, 0% at 60s)
-    const fillPercentage = Math.max(0, 100 - (secondsAgo / 60) * 100);
+    const fillPercentage = Math.min(100, (secondsAgo / 60) * 100);
     pendingBlock.style.setProperty('--fill-percentage', `${fillPercentage}%`);
 }
 

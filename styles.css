@@ -180,9 +180,47 @@ button:hover {
     position: relative;
     margin: 25px 0 25px 0;
     border: 1px solid rgba(255, 255, 255, 0);
-    --fill-percentage: 100%;
     transition: transform 2s ease-out;
 }
+
+#pendingBlock {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+#pendingBlock:before {
+    height: var(--fill-percentage);
+    transition: top 1s linear;
+    content: "";
+    width: 100%;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.05);
+    position: absolute;
+}
+
+.block.active {
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    z-index: 2;
+    position: relative;
+}
+
+.block.active::after {
+    content: '';
+    position: absolute;
+    bottom: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-top: 12px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.2s;
+    z-index: 1;
+}
+
+
 
 /* Animation for new blocks */
 .block.slide-in {
@@ -211,45 +249,6 @@ button:hover {
         opacity: 1;
         transform: translateX(0);
     }
-}
-
-#pendingBlock {
-    background: rgba(255, 255, 255, 0.05);
-    overflow: hidden;
-}
-
-#pendingBlock:before {
-    top: var(--fill-percentage);
-    transition: top 1s linear;
-    content: "";
-    height: 100%;
-    width: 100%;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(255, 255, 255, 0.05);
-    position: absolute;
-}
-
-.block.active {
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    z-index: 2;
-    position: relative;
-}
-
-.block.active::after {
-    content: '';
-    position: absolute;
-    bottom: -40px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0;
-    height: 0;
-    border-left: 12px solid transparent;
-    border-right: 12px solid transparent;
-    border-top: 12px solid rgba(255, 255, 255, 0.3);
-    transition: all 0.2s;
-    z-index: 1;
 }
 
 .block-number {
