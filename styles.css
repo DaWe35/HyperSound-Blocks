@@ -145,6 +145,7 @@ button:hover {
     padding: 20px 0;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
+    width: 100%;
 }
 
 .blocks-scroll {
@@ -155,7 +156,7 @@ button:hover {
 
 .block {
     min-width: 200px;
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     padding: 20px;
     cursor: pointer;
@@ -169,11 +170,28 @@ a {
 }
 
 .block:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.15);
 }
 
 .block.active {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.2);
+    z-index: 2;
+    position: relative;
+}
+
+.block.active::after {
+    content: '';
+    position: absolute;
+    bottom: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-top: 12px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.2s;
+    z-index: 1;
 }
 
 .block-number {
@@ -185,7 +203,7 @@ a {
     font-size: 14px;
 }
 
-.block-miner-count {
+.block-miner-count, .miner-count {
     font-size: 32px;
     font-weight: bold;
     text-align: center;
@@ -242,4 +260,19 @@ a {
     text-align: center;
     border-radius: 4px;
     font-size: 20px;
+}
+
+.miner-item.loading {
+    opacity: 0.5;
+    animation: pulse 1.5s infinite;
+}
+
+.loading-address {
+    color: var(--text-secondary);
+}
+
+@keyframes pulse {
+    0% { opacity: 0.5; }
+    50% { opacity: 0.3; }
+    100% { opacity: 0.5; }
 } 

@@ -321,9 +321,9 @@ function formatAddress(address) {
 }
 
 function createBlockElement(data) {
-
     const block = document.createElement('div');
     block.className = 'block';
+    block.id = `block-${data.blockNumber}`;
     block.innerHTML = `
         <div class="block-number">#${data.blockNumber}</div>
         <div class="block-miner-count">
@@ -365,7 +365,7 @@ function createPendingBlockElement() {
 }
 
 async function getBlockMiners(blockNumber, totalMiners) {
-    const BATCH_SIZE = 100; // Number of miners to fetch per multicall
+    const BATCH_SIZE = 5000; // Number of miners to fetch per multicall
     const miners = {};
     
     try {
@@ -396,7 +396,6 @@ async function getBlockMiners(blockNumber, totalMiners) {
             
             console.log(`Loaded miners ${startIndex} to ${endIndex} for block ${blockNumber}`);
         }
-        console.log(miners);
         return miners;
         
     } catch (error) {
@@ -407,37 +406,55 @@ async function getBlockMiners(blockNumber, totalMiners) {
 
 async function showBlockMiners(blockNumber, minersCount) {
     const blockDetails = document.getElementById('blockDetails');
+    // Remove active class from all blocks first
     document.querySelectorAll('.block').forEach(b => b.classList.remove('active'));
+
+    blockDetails.classList.add('active');
+    blockDetails.innerHTML = renderBlockDetails(blockNumber, minersCount, {});
+    
+
+    const blockElement = document.getElementById(`block-${blockNumber}`);
+    blockElement.classList.add('active');
+    blockElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    
     if (blockNumber === null) return;
 
     try {
         const miners = await getBlockMiners(blockNumber, parseInt(minersCount));
+        blockDetails.innerHTML = renderBlockDetails(blockNumber, minersCount, miners);
+    } catch (error) {
+        console.error('Error showing block miners:', error);
+    }
+}
 
-        // Convert object to array of entries and sort by count
-        const minersArray = Object.entries(miners)
-            .sort((a, b) => b[1] - a[1]) // Sort by count descending
+function renderBlockDetails(blockNumber, minersCount, miners) {
+    const isLoading = Object.keys(miners).length === 0;
+    const items = isLoading 
+        ? Array(4).fill(`
+            <div class="miner-item loading">
+                <span class="miner-count">...</span>
+                <br>
+                <span class="loading-address">Loading...</span>
+            </div>`)
+        : Object.entries(miners)
+            .sort((a, b) => b[1] - a[1])
             .map(([address, count]) => `
                 <div class="miner-item">
-                    <span class="miner-count">${count}</span>
-                    <span class="mdi mdi-pickaxe"></span>
+                    <span class="miner-count">${count}
+                        <span class="mdi mdi-pickaxe"></span>
+                    </span>
                     <br>
                     <a href="https://blastscan.io/address/${address}" target="_blank">
                         ${formatAddress(address)}
                     </a>
-                </div>
-            `).join('');
+                </div>`);
 
-        blockDetails.innerHTML = `
-            <h3>Block #${blockNumber} Miners (${minersCount})</h3>
-            <div class="miners-list">
-                ${minersArray}
-            </div>
-        `;
-        
-        blockDetails.classList.add('active');
-    } catch (error) {
-        console.error('Error showing block miners:', error);
-    }
+    return `
+        <h3>Block #${blockNumber} Miners (${minersCount})</h3>
+        <div class="miners-list">
+            ${items.join('')}
+        </div>
+    `;
 }
 
 // Main Update Function
@@ -463,13 +480,13 @@ async function updateAllMetrics() {
             await loadBlock(currentBlock - i);
         }
 
-        console.log('Contract State:', { 
+        /* console.log('Contract State:', { 
             ...decoded, 
             tvlEth, 
             ethPrice,
             theoreticalValueEth: values.theoreticalValueEth,
             theoreticalValueUsd: values.theoreticalValueUsd
-        });
+        }); */
     } catch (error) {
         console.error('Error updating metrics:', error);
         const metrics = ['lastBlock', 'totalSupply', 'minerReward', 'minersCount', 
