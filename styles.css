@@ -148,9 +148,20 @@ button:hover {
     position: relative;
     overflow-x: auto;
     padding: 20px 0;
-    scroll-behavior: smooth;
+    scroll-behavior: auto;
     -webkit-overflow-scrolling: touch;
     width: 100%;
+    cursor: grab;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.blocks-container::-webkit-scrollbar {
+    display: none;
+}
+
+.blocks-container.dragging {
+    cursor: grabbing;
 }
 
 .blocks-scroll {

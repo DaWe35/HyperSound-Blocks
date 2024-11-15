@@ -571,28 +571,75 @@ function calculateBurnedTokens(maxSupply) {
 
 // Remove the load more button event listener and add scroll detection
 function initializeInfiniteScroll() {
-    const blocksContainer = document.querySelector('.blocks-container');
-    let isLoading = false;
+    const container = document.querySelector('.blocks-container');
+    let isDragging = false;
+    let startX;
+    let scrollLeft;
+    let hasMoved = false;
 
-    blocksContainer.addEventListener('scroll', async () => {
-        // Check if we're near the right edge (where older blocks are)
-        const scrollLeft = blocksContainer.scrollLeft;
-        const scrollWidth = blocksContainer.scrollWidth;
-        const clientWidth = blocksContainer.clientWidth;
-        
-        // Load more when we're within 20% of the right edge
-        if (!isLoading && (scrollWidth - (scrollLeft + clientWidth)) / clientWidth < 0.2) {
-            isLoading = true;
-            
+    container.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        hasMoved = false;
+        container.classList.add('dragging');
+        startX = e.pageX - container.offsetLeft;
+        scrollLeft = container.scrollLeft;
+    });
+
+    container.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+        hasMoved = true;
+        const x = e.pageX - container.offsetLeft;
+        const walk = x - startX;
+        container.scrollLeft = scrollLeft - walk;
+    });
+
+    // Handle scroll near edges for infinite loading
+    container.addEventListener('scroll', debounce(async () => {
+        const { scrollLeft, scrollWidth, clientWidth } = container;
+        if ((scrollWidth - (scrollLeft + clientWidth)) / clientWidth < 0.2) {
             const oldestBlock = Math.min(...Array.from(loadedBlocks));
-            // Load older blocks
             for (let i = 1; i <= 5; i++) {
                 await loadBlock(oldestBlock - i);
             }
-            
-            isLoading = false;
         }
+    }, 100));
+
+    // Prevent click events if dragging occurred
+    container.addEventListener('click', (e) => {
+        if (hasMoved) {
+            e.stopPropagation();
+            e.preventDefault();
+        }
+    }, true);
+
+    // Stop dragging
+    window.addEventListener('mouseup', () => {
+        isDragging = false;
+        container.classList.remove('dragging');
+        // Reset hasMoved after a short delay to allow legitimate clicks
+        setTimeout(() => {
+            hasMoved = false;
+        }, 10);
     });
+
+    window.addEventListener('mouseleave', () => {
+        isDragging = false;
+        container.classList.remove('dragging');
+    });
+}
+
+// Debounce helper
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
 }
 
 function updatePendingBlockProgress(secondsAgo) {
