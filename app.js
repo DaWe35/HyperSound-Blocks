@@ -310,6 +310,8 @@ async function loadBlock(blockNumber) {
 
 function formatAddress(address) {
     switch (address) {
+        case null:
+            return 'Pending...';
         case '0xb82619C0336985e3EDe16B97b950E674018925Bb':
             return 'KONKPool';
         case '0x2099A5d5DA9db8a91a21b7a1Cf7f969a5D078C15':
@@ -330,9 +332,7 @@ function createBlockElement(data) {
             ${data.minersCount}
             <span class="mdi mdi-pickaxe"></span>
         </div>
-        <a href="https://blastscan.io/address/${data.winner}" target="_blank">
-            <div class="block-winner">${formatAddress(data.winner)}</div>
-        </a>
+        <div class="block-winner">${formatAddress(data.winner)}</div>
         <div class="block-reward">${data.reward} $HYPERS</div>
         <a href="https://blastscan.io/address/${data.miner}" target="_blank">
             <div class="block-miner">${formatAddress(data.miner)}</div>
@@ -360,7 +360,7 @@ function createPendingBlockElement() {
         </div>
     `;
     
-    block.onclick = () => showBlockMiners(document.getElementById('lastBlock').textContent, document.getElementById('pendingBlockMinerCount').textContent);
+    block.onclick = () => showBlockMiners(parseInt(document.getElementById('lastBlock').textContent) + 1, parseInt(document.getElementById('pendingBlockMinerCount').textContent));
     return block;
 }
 
@@ -410,24 +410,32 @@ async function showBlockMiners(blockNumber, minersCount) {
     document.querySelectorAll('.block').forEach(b => b.classList.remove('active'));
 
     blockDetails.classList.add('active');
-    blockDetails.innerHTML = renderBlockDetails(blockNumber, minersCount, {});
-    
-
-    const blockElement = document.getElementById(`block-${blockNumber}`);
+    let blockElement;
+    if (blockNumber > currentBlockCache) {
+        blockElement = document.getElementById(`pendingBlock`);
+    } else {
+        blockElement = document.getElementById(`block-${blockNumber}`);
+    }
     blockElement.classList.add('active');
     blockElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-    
-    if (blockNumber === null) return;
+    blockDetails.innerHTML = await renderBlockDetails(blockNumber, minersCount, {});
 
+    if (blockNumber === null) return;
+    await updateBlockMiners(blockNumber, minersCount);
+
+}
+
+async function updateBlockMiners(blockNumber, minersCount) {
+    const blockDetails = document.getElementById('blockDetails');
     try {
         const miners = await getBlockMiners(blockNumber, parseInt(minersCount));
-        blockDetails.innerHTML = renderBlockDetails(blockNumber, minersCount, miners);
+        blockDetails.innerHTML = await renderBlockDetails(blockNumber, minersCount, miners);
     } catch (error) {
         console.error('Error showing block miners:', error);
     }
 }
 
-function renderBlockDetails(blockNumber, minersCount, miners) {
+async function renderBlockDetails(blockNumber, minersCount, miners) {
     const isLoading = Object.keys(miners).length === 0;
     const items = isLoading 
         ? Array(4).fill(`
@@ -449,8 +457,15 @@ function renderBlockDetails(blockNumber, minersCount, miners) {
                     </a>
                 </div>`);
 
+    const winner = await getWinner(blockNumber);
+    const reward = calculateReward(blockNumber);
+    const miner = await getMiner(blockNumber);
     return `
-        <h3>Block #${blockNumber} Miners (${minersCount})</h3>
+        <h2>Block #${blockNumber}</h2>
+        <p>Miners: ${minersCount}</p>
+        <p>Winner: <a href="https://blastscan.io/address/${winner}" target="_blank">${formatAddress(winner)}</a></p>
+        <p>Reward: ${reward} $HYPERS</p>
+        <p>Miner: <a href="https://blastscan.io/address/${miner}" target="_blank">${formatAddress(miner)}</a></p>
         <div class="miners-list">
             ${items.join('')}
         </div>
@@ -458,6 +473,7 @@ function renderBlockDetails(blockNumber, minersCount, miners) {
 }
 
 // Main Update Function
+let currentMinerCache = 0;
 async function updateAllMetrics() {
     try {
         const calls = buildContractCalls();
@@ -473,6 +489,11 @@ async function updateAllMetrics() {
         updateNextHalving(decoded.blockNumber, decoded.lastHalvingBlock, decoded.halvingInterval);
 
         currentBlockCache = parseInt(decoded.blockNumber);
+        const isPendingBlockActive = document.getElementById('pendingBlock').classList.contains('active');
+        if (isPendingBlockActive && currentMinerCache !== parseInt(decoded.minersCount)) {
+            currentMinerCache = parseInt(decoded.minersCount);
+            await updateBlockMiners(currentBlockCache + 1, currentMinerCache);
+        }
         
         // Load latest blocks
         const currentBlock = parseInt(decoded.blockNumber);
