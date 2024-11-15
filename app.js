@@ -204,19 +204,15 @@ function updateUI(values, tvlEth) {
 
     const secondsAgo = Math.floor((Date.now() / 1000) - lastBlockTime);
     document.getElementById('lastBlockTime').textContent = `${secondsAgo}s`;
-
+    updatePendingBlockProgress(secondsAgo);
 
     // Update pending block
     if (currentBlockCache !== 0) {
         // document.getElementById('pendingBlockNumber').textContent = currentBlockCache + 1;
         document.getElementById('pendingBlockMinerCount').textContent = minersCount;
-        document.getElementById('pendingBlockReward').textContent = minerReward/1e18;
-        document.getElementById('pendingBlockWinner').textContent = `${secondsAgo}s`;
     }
-}
-
-// Time Updates
-function updateLastBlockTime(lastBlockTime) {
+    document.getElementById('pendingBlockReward').textContent = minerReward/1e18;
+    document.getElementById('pendingBlockWinner').textContent = `${secondsAgo}s`;
 }
 
 function formatTimeUntil(hours) {
@@ -239,12 +235,12 @@ function updateNextHalving(currentBlock, lastHalvingBlock, halvingInterval) {
 }
 
 async function getWinner(blockNumber) {
-    if (blockNumber > currentBlockCache) return null;
+    if (blockNumber > currentBlockCache) return 'pending';
     return '0x0000000000000000000000000000000000000000';
 }
 
 async function getMiner(blockNumber) {
-    if (blockNumber > currentBlockCache) return null;
+    if (blockNumber > currentBlockCache) return 'pending';
     return '0x0000000000000000000000000000000000000000';
 }
 
@@ -310,7 +306,7 @@ async function loadBlock(blockNumber) {
 
 function formatAddress(address) {
     switch (address) {
-        case null:
+        case 'pending':
             return 'Pending...';
         case '0xb82619C0336985e3EDe16B97b950E674018925Bb':
             return 'KONKPool';
@@ -408,8 +404,6 @@ async function showBlockMiners(blockNumber, minersCount) {
     const blockDetails = document.getElementById('blockDetails');
     // Remove active class from all blocks first
     document.querySelectorAll('.block').forEach(b => b.classList.remove('active'));
-
-    blockDetails.classList.add('active');
     let blockElement;
     if (blockNumber > currentBlockCache) {
         blockElement = document.getElementById(`pendingBlock`);
@@ -417,6 +411,7 @@ async function showBlockMiners(blockNumber, minersCount) {
         blockElement = document.getElementById(`block-${blockNumber}`);
     }
     blockElement.classList.add('active');
+    blockDetails.classList.add('active');
     blockElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     blockDetails.innerHTML = await renderBlockDetails(blockNumber, minersCount, {});
 
@@ -460,8 +455,9 @@ async function renderBlockDetails(blockNumber, minersCount, miners) {
     const winner = await getWinner(blockNumber);
     const reward = calculateReward(blockNumber);
     const miner = await getMiner(blockNumber);
+    const displayBlockNumber = blockNumber > currentBlockCache ? 'Pending block...' : `Block #${blockNumber}`;
     return `
-        <h2>Block #${blockNumber}</h2>
+        <h2>${displayBlockNumber}</h2>
         <p>Miners: ${minersCount}</p>
         <p>Winner: <a href="https://blastscan.io/address/${winner}" target="_blank">${formatAddress(winner)}</a></p>
         <p>Reward: ${reward} $HYPERS</p>
@@ -485,7 +481,6 @@ async function updateAllMetrics() {
         const values = calculateValues(decoded.tokenValue, decoded.totalSupply, tvlEth);
         
         updateUI({ ...decoded, ...values }, tvlEth);
-        updateLastBlockTime(decoded.lastBlockTime);
         updateNextHalving(decoded.blockNumber, decoded.lastHalvingBlock, decoded.halvingInterval);
 
         currentBlockCache = parseInt(decoded.blockNumber);
@@ -598,6 +593,15 @@ function initializeInfiniteScroll() {
             isLoading = false;
         }
     });
+}
+
+function updatePendingBlockProgress(secondsAgo) {
+    const pendingBlock = document.getElementById('pendingBlock');
+    if (!pendingBlock) return;
+    
+    // Calculate fill percentage (0% at 0s, 100% at 60s)
+    const fillPercentage = Math.min(100, (secondsAgo / 60) * 100);
+    pendingBlock.style.setProperty('--fill-percentage', `${fillPercentage}%`);
 }
 
 // Initialize

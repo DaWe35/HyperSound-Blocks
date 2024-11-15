@@ -3,23 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HyperSound Money</title>
+    <title>HyperSound Block Explorer</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <div class="logo">
-                <img src="https://hypers.money/assets/logo.15749a53.png" alt="Logo" class="logo-img">
-                <h1>HyperSound Explorer</h1>
-                <a href="https://blastscan.io/address/0xF8797dB8a9EeD416Ca14e8dFaEde2BF4E1aabFC3" 
-                   target="_blank" 
-                   class="contract-link">
-                    0xF879...FC3
-                </a>
+    <header>
+        <div class="logo">
+            <img src="https://hypers.money/assets/logo.15749a53.png" alt="Logo" class="logo-img">
+            <h1>HyperSound Blocks</h1>
+            <a href="https://blastscan.io/address/0xF8797dB8a9EeD416Ca14e8dFaEde2BF4E1aabFC3" 
+                target="_blank" 
+                class="contract-link">
+                0xF879...FC3
+            </a>
+            <a href="https://github.com/Weborate/HyperSound-Blocks" target="_blank">
+                <span class="mdi mdi-github"></span>
+            </a>
+        </div>
+    </header>
+
+    <div class="blocks-section">
+        <div class="blocks-container">
+            <div class="blocks-scroll" id="blocksScroll">
+                <!-- Blocks will be added here dynamically -->
             </div>
-        </header>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <div class="block-details" id="blockDetails">
+            <!-- Miners list will appear here when a block is clicked -->
+        </div>
 
         <div class="metrics-container">
             <div class="metric">
@@ -27,7 +43,9 @@
                     INTRINSIC VALUE
                 </div>
                 <div class="metric-value">$<span id="intrinsicValue">...</span></div>
-                <div class="metric-secondary"><span id="intrinsicValueEth">...</span> ETH</div>
+                <div class="metric-secondary">
+                    <span id="intrinsicValueEth">...</span><span class="mdi mdi-ethereum"></span>
+                </div>
             </div>
 
             <div class="metric">
@@ -35,14 +53,18 @@
                     THEORETICAL VALUE
                 </div>
                 <div class="metric-value">$<span id="theoreticalValue">...</span></div>
-                <div class="metric-secondary"><span id="theoreticalValueEth">...</span> ETH</div>
+                <div class="metric-secondary">
+                    <span id="theoreticalValueEth">...</span><span class="mdi mdi-ethereum"></span>
+                </div>
             </div>
 
             <div class="metric">
                 <div class="metric-label">
                     TVL
                 </div>
-                <div class="metric-value"><span id="tvl">...</span> ETH</div>
+                <div class="metric-value">
+                    <span id="tvl">...</span><span class="mdi mdi-ethereum"></span>
+                </div>
                 <div class="metric-secondary">$<span id="tvlUsd">...</span></div>
             </div>
 
@@ -91,17 +113,7 @@
             </div>
         </div>
 
-        <div class="blocks-section">
-            <h2>Blocks</h2>
-            <div class="blocks-container">
-                <div class="blocks-scroll" id="blocksScroll">
-                    <!-- Blocks will be added here dynamically -->
-                </div>
-            </div>
-            <div class="block-details" id="blockDetails">
-                <!-- Miners list will appear here when a block is clicked -->
-            </div>
-        </div>
+
     </div>
     <script src="app.js"></script>
 
