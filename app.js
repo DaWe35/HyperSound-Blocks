@@ -216,6 +216,11 @@ function updateUI(values, tvlEth) {
     }
     document.getElementById('pendingBlockReward').textContent = minerReward/1e18;
     document.getElementById('pendingBlockWinner').textContent = `${secondsAgo}s`;
+
+    // Update gas price
+    const gasPriceGwei = web3.utils.fromWei(values.gasPrice, 'gwei');
+    document.getElementById('gasPrice').textContent = `${parseFloat(gasPriceGwei).toFixed(4)} Gwei`;
+    document.getElementById('gasPriceUsd').textContent = `$${(parseFloat(gasPriceGwei) * ethPrice * 0.000000001 * 25000000).toFixed(2)}`;
 }
 
 function formatTimeUntil(hours) {
@@ -512,11 +517,17 @@ let currentMinerCache = null;
 async function updateAllMetrics() {
     try {
         const calls = buildContractCalls();
-        const results = await multicall(calls);
-        const decoded = decodeResults(results);
+        const [gasPrice, results] = await Promise.all([
+            web3.eth.getGasPrice(),
+            multicall(calls)
+        ]);
         
+        const decoded = decodeResults(results);
         const tvlEth = await calculateTVL(decoded.gasParams);
         const values = calculateValues(decoded.tokenValue, decoded.totalSupply, tvlEth);
+        
+        // Add gas price to values
+        values.gasPrice = gasPrice;
         
         updateUI({ ...decoded, ...values }, tvlEth);
         updateNextHalving(decoded.blockNumber, decoded.lastHalvingBlock, decoded.halvingInterval);
@@ -533,19 +544,11 @@ async function updateAllMetrics() {
         for (let i = 0; i < 10; i++) {
             await loadBlock(currentBlock - i);
         }
-
-        /* console.log('Contract State:', { 
-            ...decoded, 
-            tvlEth, 
-            ethPrice,
-            theoreticalValueEth: values.theoreticalValueEth,
-            theoreticalValueUsd: values.theoreticalValueUsd
-        }); */
     } catch (error) {
         console.error('Error updating metrics:', error);
         const metrics = ['lastBlock', 'totalSupply', 'minerReward', 'minersCount', 
                         'lastBlockTime', 'nextHalving', 'intrinsicValue', 'theoreticalValue',
-                        'intrinsicValueEth', 'theoreticalValueEth', 'tvl'];
+                        'intrinsicValueEth', 'theoreticalValueEth', 'tvl', 'gasPrice'];
         metrics.forEach(id => document.getElementById(id).textContent = '...');
     }
 }
