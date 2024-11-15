@@ -512,13 +512,27 @@ async function renderBlockDetails(blockNumber, minersCount, miners) {
     `;
 }
 
+async function lowGasFee() {
+    try {
+        const latestBlock = await web3.eth.getBlock('latest');
+        const baseFee = BigInt(latestBlock.baseFeePerGas);
+        const safeLow = baseFee + (baseFee * BigInt(6) / BigInt(100));
+        console.log('Safe low gas fee:', safeLow);
+        return safeLow;
+    } catch (error) {
+        console.error('Error fetching current base fee:');
+        console.error(error.stack);
+        return null;
+    }
+}
+
 // Main Update Function
 let currentMinerCache = null;
 async function updateAllMetrics() {
     try {
         const calls = buildContractCalls();
         const [gasPrice, results] = await Promise.all([
-            web3.eth.getGasPrice(),
+            lowGasFee(),
             multicall(calls)
         ]);
         
@@ -526,8 +540,8 @@ async function updateAllMetrics() {
         const tvlEth = await calculateTVL(decoded.gasParams);
         const values = calculateValues(decoded.tokenValue, decoded.totalSupply, tvlEth);
         
-        // Add gas price to values
-        values.gasPrice = gasPrice;
+        // Convert BigInt to string for web3.utils.fromWei
+        values.gasPrice = gasPrice ? gasPrice.toString() : '0';
         
         updateUI({ ...decoded, ...values }, tvlEth);
         updateNextHalving(decoded.blockNumber, decoded.lastHalvingBlock, decoded.halvingInterval);
