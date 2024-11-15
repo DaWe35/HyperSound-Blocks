@@ -180,17 +180,25 @@ button:hover {
     position: relative;
     margin: 25px 0 25px 0;
     border: 1px solid rgba(255, 255, 255, 0);
+    --fill-percentage: 100%;
 }
 
 #pendingBlock {
-    background: linear-gradient(
-        to top,
-        rgba(255, 255, 255, 0.1) 0%,
-        rgba(255, 255, 255, 0.1) var(--fill-percentage),
-        rgba(255, 255, 255, 0.05) var(--fill-percentage),
-        rgba(255, 255, 255, 0.05) 100%
-    );
-    --fill-percentage: 0%;
+    background: rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+}
+
+#pendingBlock:before {
+    top: var(--fill-percentage);
+    transition: top 1s linear;
+    content: "";
+    height: 100%;
+    width: 100%;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.05);
+    position: absolute;
 }
 
 .block.active {

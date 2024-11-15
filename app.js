@@ -646,8 +646,8 @@ function updatePendingBlockProgress(secondsAgo) {
     const pendingBlock = document.getElementById('pendingBlock');
     if (!pendingBlock) return;
     
-    // Calculate fill percentage (0% at 0s, 100% at 60s)
-    const fillPercentage = Math.min(100, (secondsAgo / 60) * 100);
+    // Calculate fill percentage (100% at 0s, 0% at 60s)
+    const fillPercentage = Math.max(0, 100 - (secondsAgo / 60) * 100);
     pendingBlock.style.setProperty('--fill-percentage', `${fillPercentage}%`);
 }
 
