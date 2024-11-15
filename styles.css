@@ -167,7 +167,7 @@ button:hover {
 .blocks-scroll {
     display: flex;
     gap: 20px;
-    padding: 0 20px;
+    padding: 0 calc(50vw - 220px);
 }
 
 .block {
