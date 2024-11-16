@@ -21,6 +21,8 @@ if (VERSION === 'v1') {
     ABI = '/abi/v3.json';
 }
 
+document.getElementById('contract-link').href = `https://blastscan.io/address/${CONTRACT_ADDRESS}`;
+
 // ABI Loading
 async function loadABIs() {
     try {
@@ -216,7 +218,7 @@ function updateUI(values, tvlEth) {
 
     // Update time metrics
     const secondsAgo = Math.floor((Date.now() / 1000) - lastBlockTime);
-    document.getElementById('lastBlockTime').textContent = `${secondsAgo}s`;
+    document.getElementById('lastBlockTime').textContent = `${formatSecondsAgo(secondsAgo)}`;
     updatePendingBlockProgress(secondsAgo);
 
     // Update pending block
@@ -244,6 +246,16 @@ function formatTimeUntil(hours) {
     if (minutes > 0) result += `${minutes}m`;
     
     return result.trim() || '0m';
+}
+
+function formatSecondsAgo(seconds) {
+    if (seconds < 300) {
+        return `${seconds}s`;
+    } else if (seconds < 86400) {
+        return `${Math.floor(seconds / 3600)} hours`;
+    } else {
+        return `${Math.floor(seconds / 86400)} days`;
+    }
 }
 
 function updateNextHalving(currentBlock, lastHalvingBlock, halvingInterval) {
@@ -601,6 +613,7 @@ async function init() {
         ethPriceInterval = setInterval(async () => {
             ethPrice = await getEthPrice();
         }, 60000);
+        initializeExternalLinks();
     } catch (error) {
         console.error('Initialization error:', error);
     }
@@ -718,3 +731,48 @@ function updatePendingBlockProgress(secondsAgo) {
 
 // Initialize
 init(); 
+
+// Add this to your existing init() function or create a new function
+function initializeExternalLinks() {
+    const modal = document.getElementById('external-link-modal');
+    const urlDisplay = modal.querySelector('.external-url');
+    const modalTitle = document.getElementById('modal-title');
+    const modalContent = document.getElementById('modal-content');
+    let pendingUrl = '';
+
+    // Handle button links
+    document.querySelectorAll('.button-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            pendingUrl = link.dataset.externalUrl;
+            
+            // Update modal with custom warning messages
+            modalTitle.textContent = link.dataset.warningTitle;
+            modalContent.textContent = link.dataset.warningContent;
+            urlDisplay.textContent = pendingUrl;
+            
+            modal.style.display = 'block';
+        });
+    });
+
+    // Continue button
+    modal.querySelector('.continue').addEventListener('click', () => {
+        window.open(pendingUrl, '_blank');
+        modal.style.display = 'none';
+    });
+
+    // Cancel button
+    modal.querySelector('.cancel').addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+
+    // Close modal when clicking outside
+    window.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+}
+
+// Add this line to your init() function
+initializeExternalLinks(); 

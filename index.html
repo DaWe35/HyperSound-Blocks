@@ -12,13 +12,18 @@
         <div class="logo">
             <img src="https://hypers.money/assets/logo.15749a53.png" alt="Logo" class="logo-img">
             <h1>HyperSound Blocks</h1>
-            <a href="https://blastscan.io/address/0xF8797dB8a9EeD416Ca14e8dFaEde2BF4E1aabFC3" 
-                target="_blank" 
-                class="contract-link">
-                0xF879...FC3
-            </a>
             <a href="https://github.com/Weborate/HyperSound-Blocks" target="_blank">
                 <span class="mdi mdi-github"></span>
+            </a>
+            <a href="#" target="_blank" id="contract-link">
+                <img src="https://blastscan.io/assets/blast/images/svg/logos/chain-dark.svg?v=24.11.1.0" 
+                     alt="Blast Logo" 
+                     class="href-logo">
+            </a>
+            <a href="https://hypers.money" target="_blank">
+                <img src="https://hypers.money/assets/logo.15749a53.png" 
+                     alt="HyperSound Logo" 
+                     class="href-logo">
             </a>
         </div>
     </header>
@@ -113,11 +118,57 @@
             </div>
         </div>
 
+        <a href="#" 
+           data-external-url="https://www.fenixfinance.io/trade/swap" 
+           data-warning-title="Check Token before buying!"
+           data-warning-content="Don't forget to double check the token before you buy! Contract address: 0xF8797dB8a9EeD416Ca14e8dFaEde2BF4E1aabFC3"
+           class="button-link">
+            <span class="mdi mdi-swap-horizontal"></span>
+            <span>Buy on Fenix</span>
+        </a>
+
+        <a href="#" 
+           data-external-url="https://hypers.money" 
+           data-warning-title=""
+           data-warning-content="Mine/burn on the official HyperSound Money website"
+           class="button-link">
+            <span class="mdi mdi-pickaxe"></span>
+            <span>Mine/burn</span>
+        </a>
+
+        <a href="#" 
+           data-external-url="https://app.kiyosonk.xyz/konk-hyper-mining" 
+           data-warning-title="Risk warning"
+           data-warning-content="Future mining is only possible with KONKPool. Make sure to understand the time-lock mechanics and other risks before committing your tokens."
+           class="button-link">
+            <span class="mdi mdi-clock-outline"></span>
+            <span>Future Mine</span>
+        </a>
+
+        <iframe id="dextools-widget"
+            title="DEXTools Trading Chart"
+            width="100%" height="400"
+            src="https://www.dextools.io/widget-chart/en/blast/pe-light/0x70b8c7e3cda2f8a2b2719afc5350752f71bad985?theme=dark&chartType=1&chartResolution=60&drawingToolbars=false"></iframe>
 
     </div>
     <script src="app.js"></script>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css">
+
+    <div id="external-link-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="modal-title">External Link Warning</h2>
+            <p id="modal-content"></p>
+            <p class="external-url"></p>
+            <div class="modal-buttons">
+                <button class="modal-button cancel">Cancel</button>
+                <button class="modal-button continue">
+                    Open
+                    <span class="mdi mdi-open-in-new"></span>
+                </button>
+            </div>
+        </div>
+    </div>
 
 </body>
 </html>
