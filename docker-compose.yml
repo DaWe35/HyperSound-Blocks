@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  hypersound-blocks:
+    image: busybox
+    container_name: hypersound-blocks
+    ports:
+      - "9999:80"
+    volumes:
+      - ./:/var/www:ro
+    command: httpd -f -p 80 -h /var/www
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3" 
