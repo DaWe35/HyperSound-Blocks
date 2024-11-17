@@ -238,7 +238,7 @@ function updateUI(values, tvlEth) {
 
     document.getElementById('pendingBlockMinerCount').textContent = minersCount
     document.getElementById('pendingBlockReward').textContent = minerReward/1e18
-    document.getElementById('pendingBlockWinner').textContent = `${secondsAgo}s`
+    document.getElementById('pendingBlockWinner').textContent = formatSecondsAgo(secondsAgo)
 
     // Update gas price
     const gasPriceGwei = web3.utils.fromWei(values.gasPrice, 'gwei')
