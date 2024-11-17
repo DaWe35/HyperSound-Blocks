@@ -197,6 +197,7 @@ function calculateValues(tokenValue, totalSupply, tvlEth) {
 }
 
 let LAST_HYPERS_BLOCK = 0
+let LAST_HYPERS_BLOCK_TIME = 0
 // UI Updates
 function updateUI(values, tvlEth) {
     const {
@@ -232,13 +233,13 @@ function updateUI(values, tvlEth) {
     document.getElementById('minedAmount').textContent = formatNumber(Math.round(mined.amount))
 
     // Update time metrics
-    const secondsAgo = Math.floor((Date.now() / 1000) - lastBlockTime)
-    document.getElementById('lastBlockTime').textContent = `${formatSecondsAgo(secondsAgo)}`
-    updatePendingBlockProgress(secondsAgo)
+    LAST_HYPERS_BLOCK_TIME = Math.floor((Date.now() / 1000) - lastBlockTime)
+    document.getElementById('lastBlockTime').textContent = `${formatSeconds(LAST_HYPERS_BLOCK_TIME)}`
+    updatePendingBlockProgress(LAST_HYPERS_BLOCK_TIME)
 
     document.getElementById('pendingBlockMinerCount').textContent = minersCount
     document.getElementById('pendingBlockReward').textContent = minerReward/1e18
-    document.getElementById('pendingBlockWinner').textContent = formatSecondsAgo(secondsAgo)
+    document.getElementById('pendingBlockWinner').textContent = formatSeconds(LAST_HYPERS_BLOCK_TIME)
 
     // Update gas price
     const gasPriceGwei = web3.utils.fromWei(values.gasPrice, 'gwei')
@@ -259,7 +260,7 @@ function formatTimeUntil(hours) {
     return result.trim() || '0m'
 }
 
-function formatSecondsAgo(seconds) {
+function formatSeconds(seconds) {
     if (seconds < 300) {
         return `${seconds}s`
     } else if (seconds < 86400) {
@@ -304,17 +305,20 @@ async function loadBlock(blockNumber) {
 }
 
 async function fetchBlockData(blockNumber) {
-    const [minersCount, { winner, miner }] = await Promise.all([
+    const [minersCount, blockTime] = await Promise.all([
         contract.methods.minersPerBlockCount(blockNumber).call(),
-        getBlockMinerWinner(blockNumber)
+        getBlockTime(blockNumber)
     ])
+
+    const { winner, miner } = await getBlockMinerWinner(blockNumber)
 
     return {
         blockNumber,
         minersCount,
         winner,
         reward: calculateReward(blockNumber),
-        miner
+        miner,
+        blockTime
     }
 }
 
@@ -323,7 +327,7 @@ let earliestEthBlockFetched = null
 let latestEthBLockFetched = null
 let cachedEvents = {}
 
-async function getBlockEvent(blockNumber) {
+async function getNewBlockEvent(blockNumber) {
     if (cachedEvents[blockNumber]) return cachedEvents[blockNumber]
 
     const blocksScroll = document.getElementById('blocksScroll')
@@ -380,16 +384,39 @@ async function getBlockEvent(blockNumber) {
 
 let cachedWinners = {}
 let cachedMiners = {}
+let cachedBlockTimes = {}
+async function fetchBlockExtra(blockNumber) {
+    if(!cachedMiners[blockNumber]) {
+        const event = await getNewBlockEvent(blockNumber)
+        if (!event) return { winner: 'unknown', miner: 'unknown' }
+        const tx = await web3.eth.getTransaction(event.transactionHash)
+        const block = await web3.eth.getBlock(tx.blockNumber)
+        cachedMiners[blockNumber] = tx.from
+        cachedBlockTimes[blockNumber] = block.timestamp
+    }
+}
+
+
 async function getBlockMinerWinner(blockNumber) {
     if (LAST_HYPERS_BLOCK < blockNumber) return { winner: 'pending', miner: 'pending' }
     if(!cachedMiners[blockNumber]) {
-        const event = await getBlockEvent(blockNumber)
-        if (!event) return { winner: 'unknown', miner: 'unknown' }
-        const tx = await web3.eth.getTransaction(event.transactionHash)
-        cachedMiners[blockNumber] = tx.from
+        await fetchBlockExtra(blockNumber)
     }
     const winner = cachedWinners[blockNumber] ? cachedWinners[blockNumber] : 'pending'
-    return { winner: winner, miner: cachedMiners[blockNumber] }
+    const miner = cachedMiners[blockNumber]
+    return { winner: winner, miner: miner }
+}
+
+async function getBlockTime(blockNumber) {
+    await fetchBlockExtra(blockNumber)
+    await fetchBlockExtra(blockNumber - 1)
+    if (cachedBlockTimes[blockNumber] && cachedBlockTimes[blockNumber - 1]) {
+        return cachedBlockTimes[blockNumber] - cachedBlockTimes[blockNumber - 1]
+    }
+    if (blockNumber === LAST_HYPERS_BLOCK + 1) {
+        return LAST_HYPERS_BLOCK_TIME
+    }
+    return null
 }
 
 async function insertBlockIntoDOM(blockElement, blockNumber) {
@@ -492,7 +519,7 @@ function createBlockElement(data) {
             ${winnerAddress}
         </div>
         <div class="block-reward">
-            ${data.reward} HYPERS
+            ${formatSeconds(data.blockTime)}
         </div>
         <div class="block-miner">
             <span class="mdi mdi-file-sign"></span>
@@ -514,11 +541,13 @@ function createPendingBlockElement() {
             <span id="pendingBlockMinerCount">...</span>
             <span class="mdi mdi-pickaxe"></span>
         </div>
-        <div class="block-winner" id="pendingBlockWinner">...</div>
-        <div class="block-reward">
-            <span id="pendingBlockReward">...</span>
-            $HYPERS
+        <div class="block-winner">
+            <small style="color: var(--text-secondary);">
+                <span id="pendingBlockReward">...</span>
+                $HYPERS
+            </small>
         </div>
+        <div class="block-reward" id="pendingBlockWinner">...</div>
         <div class="block-miner">Pending block</div>
     `
     
@@ -596,6 +625,7 @@ async function updateBlockMiners(blockNumber, minersCount) {
 
 async function renderBlockDetails(blockNumber, minersCount, miners) {
     const { winner, miner } = await getBlockMinerWinner(blockNumber)
+    const blockTime = await getBlockTime(blockNumber) || '...'
 
     const isLoading = Object.keys(miners).length === 0
     const items = isLoading 
@@ -639,21 +669,21 @@ async function renderBlockDetails(blockNumber, minersCount, miners) {
                 </p>
                 <small>Miners in block</small>
             </div>
+            <div class="miner-item">
+                <p class="bold block-detail-block-time">
+                    ${formatSeconds(blockTime)}
+                </p>
+                <small>Block time</small>
+            </div>
             <a href="${winnerUrl}" target="_blank">
                 <div class="miner-item">
                     <p class="bold">
                         <span class="mdi mdi-party-popper"></span>
                         ${formatAddress(winner)}
                     </p>
-                    <small>Winner</small>
+                    <small>Won ${reward} HYPERS</small>
                 </div>
             </a>
-            <div class="miner-item">
-                <p class="bold">
-                    ${reward} HYPERS
-                </p>
-                <small>Reward minted</small>
-            </div>
             <a href="${minerUrl}" target="_blank">
                 <div class="miner-item">
                     <p class="bold">
@@ -675,7 +705,7 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-let currentMinerCache = null
+let CURRENT_MINERS = null
 async function updateAllMetrics() {
     try {
         const calls = buildContractCalls()
@@ -694,9 +724,15 @@ async function updateAllMetrics() {
 
         LAST_HYPERS_BLOCK = parseInt(decoded.blockNumber)
         const isPendingBlockActive = document.getElementById('pendingBlock').classList.contains('active')
-        if (isPendingBlockActive && currentMinerCache !== parseInt(decoded.minersCount)) {
-            currentMinerCache = parseInt(decoded.minersCount)
-            await updateBlockMiners(LAST_HYPERS_BLOCK + 1, currentMinerCache)
+        if (isPendingBlockActive) {
+            const blockTimeElem = document.querySelector('.block-detail-block-time')
+            if (blockTimeElem) {
+                blockTimeElem.textContent = formatSeconds(LAST_HYPERS_BLOCK_TIME)
+            }
+            if (CURRENT_MINERS !== parseInt(decoded.minersCount)) {
+                CURRENT_MINERS = parseInt(decoded.minersCount)
+                await updateBlockMiners(LAST_HYPERS_BLOCK + 1, CURRENT_MINERS)
+            }
         }
         console.log(`Updating block ${LAST_HYPERS_BLOCK}`)
         await loadBlock(LAST_HYPERS_BLOCK)
