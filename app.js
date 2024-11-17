@@ -289,12 +289,13 @@ let loadedBlocks = new Set();
 
 async function loadBlock(blockNumber) {
     if (loadedBlocks.has(blockNumber)) return;
+
     
     try {
+        loadedBlocks.add(blockNumber);
         const blockData = await fetchBlockData(blockNumber);
         const blockElement = createBlockElement(blockData);
         await insertBlockIntoDOM(blockElement, blockNumber);
-        loadedBlocks.add(blockNumber);
     } catch (error) {
         console.error(`Error loading block ${blockNumber}:`, error);
     }
@@ -457,7 +458,7 @@ function createBlockElement(data) {
     const block = document.createElement('div');
     let winnerAddress;
     if (data.winner === 'pending') {
-        winnerAddress = '<small style="color: var(--text-secondary);">Pending winner...</small>';
+        winnerAddress = '<small class="block-winner-address" style="color: var(--text-secondary);">Pending winner...</small>';
     } else {
         winnerAddress = `
             <span class="mdi mdi-party-popper"></span>
@@ -680,6 +681,7 @@ async function updateAllMetrics() {
             currentMinerCache = parseInt(decoded.minersCount);
             await updateBlockMiners(LAST_HYPERS_BLOCK + 1, currentMinerCache);
         }
+        console.log(`Updating block ${LAST_HYPERS_BLOCK}`);
         await loadBlock(LAST_HYPERS_BLOCK);
     } catch (error) {
         console.error('Error updating metrics:', error);
