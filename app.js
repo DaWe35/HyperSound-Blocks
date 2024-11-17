@@ -595,6 +595,8 @@ async function updateBlockMiners(blockNumber, minersCount) {
 }
 
 async function renderBlockDetails(blockNumber, minersCount, miners) {
+    const { winner, miner } = await getBlockMinerWinner(blockNumber)
+
     const isLoading = Object.keys(miners).length === 0
     const items = isLoading 
         ? Array(4).fill(`
@@ -606,17 +608,17 @@ async function renderBlockDetails(blockNumber, minersCount, miners) {
         : Object.entries(miners)
             .sort((a, b) => b[1] - a[1])
             .map(([address, count]) => `
-                <div class="miner-item">
+                <div class="miner-item ${winner === address ? 'winner-shadow' : ''}">
                     <p class="miner-count">${count}
                         <span class="mdi mdi-pickaxe"></span>
                     </p>
                     <p><small>${(count / minersCount * 100).toFixed(2)}% chance</small></p>
+                    ${winner === address ? '<span class="mdi mdi-party-popper"></span>' : ''}
                     <a href="https://blastscan.io/address/${address}" target="_blank">
                         <b>${formatAddress(address)}</b>
                     </a>
                 </div>`)
 
-    const { winner, miner } = await getBlockMinerWinner(blockNumber)
     let minerUrl, winnerUrl
     if (blockNumber > LAST_HYPERS_BLOCK) {
         minerUrl = '#'
@@ -627,7 +629,7 @@ async function renderBlockDetails(blockNumber, minersCount, miners) {
     }
     const reward = calculateReward(blockNumber)
     return `
-        <p>Block #${blockNumber > LAST_HYPERS_BLOCK ? 'pending' : blockNumber}</p>
+        <p style="margin-bottom: 10px;">Block #${blockNumber > LAST_HYPERS_BLOCK ? 'pending' : blockNumber}</p>
 
         <div class="miners-list">
             <div class="miner-item">
@@ -662,7 +664,7 @@ async function renderBlockDetails(blockNumber, minersCount, miners) {
                 </div>
             </a>
         </div>
-        <p style="margin-top: 20px;">Miners:</p>
+        <p style="margin-top: 20px; margin-bottom: 10px;">Miners:</p>
         <div class="miners-list">
             ${items.join('')}
         </div>
