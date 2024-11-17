@@ -26,14 +26,12 @@ a {
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px;
 }
 
 header {
     display: flex;
     align-items: center;
-    margin: 20px;
-    margin-bottom: 30px;
+    margin: 20px auto;
     max-width: 1200px;
 }
 
@@ -188,7 +186,7 @@ button:hover {
 .blocks-scroll {
     display: flex;
     gap: 20px;
-    padding: 0 calc(50vw - 220px);
+    padding: 0 calc(50vw - 600px);
     position: relative;
 }
 
