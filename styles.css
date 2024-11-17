@@ -4,7 +4,7 @@
     --text-secondary: #888888;
     --button-border: #333333;
     --block-size: 170px;
-    --block-selection-border: inset 0px 0px 0px 1px rgba(255, 255, 255, 0.1);
+    --block-selection-border: inset 0px 0px 0px 1px rgba(255, 255, 255, 0.0);
 }
 
 * {
@@ -168,7 +168,7 @@ button:hover {
 .blocks-container {
     position: relative;
     overflow-x: auto;
-    padding: 40px 0 20px 0;
+    padding: 40px 0 30px 0;
     scroll-behavior: auto;
     -webkit-overflow-scrolling: touch;
     width: 100%;
