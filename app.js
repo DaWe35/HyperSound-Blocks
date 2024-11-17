@@ -5,19 +5,22 @@ const INITIAL_REWARD = 250
 const HALVING_INTERVAL = 42000
 
 const urlParams = new URLSearchParams(window.location.search)
-const VERSION = urlParams.get('version')
+const VERSION = urlParams.get('v')
 
-let CONTRACT_ADDRESS, ABI, web3, contract, gasContract, multicallContract, ethPrice, updateInterval, ethPriceInterval
+let CONTRACT_ADDRESS, ABI, web3, contract, gasContract, multicallContract, ethPrice, updateInterval, ethPriceInterval, WINNER_OFFSET
 
-if (VERSION === 'v1') {
+if (VERSION === '1') {
     CONTRACT_ADDRESS = '0x7E82481423B09c78e4fd65D9C1473a36E5aEd405'
     ABI = '/abi/v1.json'
-} else if (VERSION === 'v2') {
+    WINNER_OFFSET = 0
+} else if (VERSION === '2') {
     CONTRACT_ADDRESS = '0x22B309977027D4987C3463774D7046d5136CB14a'
     ABI = '/abi/v2.json'
+    WINNER_OFFSET = 0
 } else { // v3
     CONTRACT_ADDRESS = '0xF8797dB8a9EeD416Ca14e8dFaEde2BF4E1aabFC3'
     ABI = '/abi/v3.json'
+    WINNER_OFFSET = 1
 }
 
 document.getElementById('contract-link').href = `https://blastscan.io/address/${CONTRACT_ADDRESS}`
@@ -289,7 +292,6 @@ let loadedBlocks = new Set()
 
 async function loadBlock(blockNumber) {
     if (loadedBlocks.has(blockNumber)) return
-
     
     try {
         loadedBlocks.add(blockNumber)
@@ -364,7 +366,7 @@ async function getBlockEvent(blockNumber) {
         ], event.data, event.topics)
 
         cachedEvents[decoded.blockNumber] = event
-        cachedWinners[decoded.blockNumber - 1] = decoded.miner
+        cachedWinners[decoded.blockNumber - WINNER_OFFSET] = decoded.miner
     }
     if (cachedEvents[blockNumber]) {
         return cachedEvents[blockNumber]
@@ -378,12 +380,12 @@ let cachedWinners = {}
 let cachedMiners = {}
 async function getBlockMinerWinner(blockNumber) {
     if (LAST_HYPERS_BLOCK < blockNumber) return { winner: 'pending', miner: 'pending' }
-    const winner = LAST_HYPERS_BLOCK <= blockNumber ? 'pending' : cachedWinners[blockNumber]
     if(!cachedMiners[blockNumber]) {
         const event = await getBlockEvent(blockNumber)
         const tx = await web3.eth.getTransaction(event.transactionHash)
         cachedMiners[blockNumber] = tx.from
     }
+    const winner = cachedWinners[blockNumber] ? cachedWinners[blockNumber] : 'pending'
     return { winner: winner, miner: cachedMiners[blockNumber] }
 }
 
