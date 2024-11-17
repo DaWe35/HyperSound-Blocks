@@ -420,7 +420,9 @@ function insertNewBlock(blockElement, existingBlocks, blocksScroll) {
     });
 
     // update latest -1 block winner
-    document.getElementById(`block-${LAST_HYPERS_BLOCK - 1}`).querySelector('.block-winner-address').textContent = formatAddress(cachedWinners[LAST_HYPERS_BLOCK - 1]);
+    const lastBlock = document.getElementById(`block-${LAST_HYPERS_BLOCK - 1}`);
+    const winnerString = `<span class="mdi mdi-party-popper"></span> ${formatAddress(cachedWinners[LAST_HYPERS_BLOCK - 1])}`;
+    lastBlock.querySelector('.block-winner').innerHTML = winnerString;
 }
 
 function insertHistoricalBlock(blockElement, existingBlocks, blocksScroll) {
@@ -458,12 +460,9 @@ function createBlockElement(data) {
     const block = document.createElement('div');
     let winnerAddress;
     if (data.winner === 'pending') {
-        winnerAddress = '<small class="block-winner-address" style="color: var(--text-secondary);">Pending winner...</small>';
+        winnerAddress = `<small style="color: var(--text-secondary);">Pending winner...</small>`;
     } else {
-        winnerAddress = `
-            <span class="mdi mdi-party-popper"></span>
-            <span class="block-winner-address">${formatAddress(data.winner)}</span>
-        `;
+        winnerAddress = `<span class="mdi mdi-party-popper"></span> ${formatAddress(data.winner)}`;
     }
     block.className = 'block';
     block.id = `block-${data.blockNumber}`;
