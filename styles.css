@@ -27,6 +27,7 @@ a {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
+    padding-top: 0;
 }
 
 header {
@@ -316,7 +317,6 @@ button:hover {
     transition: max-height 0.3s ease-out;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 8px;
-    margin-top: 20px;
     margin-bottom: 20px;
 }
 
