@@ -672,7 +672,7 @@ async function renderBlockDetails(blockNumber, minersCount, miners) {
                     ${minersCount}
                     <span class="mdi mdi-pickaxe"></span>
                 </p>
-                <small>Miners in block</small>
+                <small>Total miners</small>
             </div>
             <div class="miner-item">
                 <p class="bold block-detail-block-time">
@@ -686,7 +686,7 @@ async function renderBlockDetails(blockNumber, minersCount, miners) {
                         <span class="mdi mdi-party-popper"></span>
                         ${formatAddress(winner)}
                     </p>
-                    <small>Won ${reward} HYPERS</small>
+                    <small>Winner of ${reward} HYPERS</small>
                 </div>
             </a>
             <a href="${minerUrl}" target="_blank">
