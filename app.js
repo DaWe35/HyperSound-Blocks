@@ -609,7 +609,7 @@ async function renderBlockDetails(blockNumber, minersCount, miners) {
         winnerUrl = '#'
     } else {
         minerUrl = `https://blastscan.io/tx/${cachedEvents[blockNumber].transactionHash}`
-        winnerUrl = `https://blastscan.io/tx/${cachedEvents[blockNumber + 1]?.transactionHash || 'pending'}`
+        winnerUrl = cachedEvents[blockNumber + WINNER_OFFSET] ? `https://blastscan.io/tx/${cachedEvents[blockNumber + WINNER_OFFSET].transactionHash}` : `#`
     }
     const reward = calculateReward(blockNumber)
     return `
