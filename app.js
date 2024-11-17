@@ -611,7 +611,7 @@ async function showBlockMiners(blockNumber, minersCount) {
     blockElement.classList.add('active')
     blockDetails.classList.add('active')
     blockElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
-    blockDetails.innerHTML = await renderBlockDetails(blockNumber, minersCount, {})
+    blockDetails.innerHTML = await renderBlockDetails(blockNumber, minersCount, null)
 
     if (blockNumber === null) return
     await updateBlockMiners(blockNumber, minersCount)
@@ -632,7 +632,7 @@ async function renderBlockDetails(blockNumber, minersCount, miners) {
     const { winner, miner } = await getBlockMinerWinner(blockNumber)
     const blockTime = await getBlockTime(blockNumber) || '...'
 
-    const isLoading = Object.keys(miners).length === 0
+    const isLoading = miners === null
     const items = isLoading 
         ? Array(4).fill(`
             <div class="miner-item loading">
