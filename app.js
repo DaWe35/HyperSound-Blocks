@@ -455,6 +455,15 @@ function formatAddress(address) {
 
 function createBlockElement(data) {
     const block = document.createElement('div');
+    let winnerAddress;
+    if (data.winner === 'pending') {
+        winnerAddress = '<small style="color: var(--text-secondary);">Pending winner...</small>';
+    } else {
+        winnerAddress = `
+            <span class="mdi mdi-party-popper"></span>
+            <span class="block-winner-address">${formatAddress(data.winner)}</span>
+        `;
+    }
     block.className = 'block';
     block.id = `block-${data.blockNumber}`;
     block.innerHTML = `
@@ -464,11 +473,10 @@ function createBlockElement(data) {
             <span class="mdi mdi-pickaxe"></span>
         </div>
         <div class="block-winner">
-            <span class="mdi mdi-party-popper"></span>
-            <span class="block-winner-address">${formatAddress(data.winner)}</span>
+            ${winnerAddress}
         </div>
         <div class="block-reward">
-            won ${data.reward} HYPERS
+            ${data.reward} HYPERS
         </div>
         <div class="block-miner">
             <span class="mdi mdi-file-sign"></span>
@@ -575,20 +583,20 @@ async function renderBlockDetails(blockNumber, minersCount, miners) {
     const items = isLoading 
         ? Array(4).fill(`
             <div class="miner-item loading">
-                <span class="miner-count">...</span>
+                <p class="miner-count">...</p>
                 <br>
-                <span class="loading-address">Loading...</span>
+                <p class="loading-address">Loading...</p>
             </div>`)
         : Object.entries(miners)
             .sort((a, b) => b[1] - a[1])
             .map(([address, count]) => `
                 <div class="miner-item">
-                    <span class="miner-count">${count}
+                    <p class="miner-count">${count}
                         <span class="mdi mdi-pickaxe"></span>
-                    </span>
+                    </p>
                     <p><small>${(count / minersCount * 100).toFixed(2)}% chance</small></p>
                     <a href="https://blastscan.io/address/${address}" target="_blank">
-                        ${formatAddress(address)}
+                        <b>${formatAddress(address)}</b>
                     </a>
                 </div>`);
 
@@ -604,24 +612,41 @@ async function renderBlockDetails(blockNumber, minersCount, miners) {
     const reward = calculateReward(blockNumber);
     return `
         <p>Block #${blockNumber > LAST_HYPERS_BLOCK ? 'pending' : blockNumber}</p>
-        <p>
-            <span class="mdi mdi-pickaxe"></span>
-            Miners in block: <b>${minersCount}</b>
-        </p>
-        <p>
-            <span class="mdi mdi-party-popper"></span>
-            Winner: 
-            <b><a href="${winnerUrl}" target="_blank">${formatAddress(winner)}</a></b>
-        </p>
-        <p>
-            <span class="mdi mdi-seal"></span>
-            Reward: <b>${reward} HYPERS</b>
-        </p>
-        <p>
-            <span class="mdi mdi-file-sign"></span>
-            Block issuer: 
-            <b><a href="${minerUrl}" target="_blank">${formatAddress(miner)}</a></b>
-        </p>
+
+        <div class="miners-list">
+            <div class="miner-item">
+                <p class="bold">
+                    ${minersCount}
+                    <span class="mdi mdi-pickaxe"></span>
+                </p>
+                <small>Miners in block</small>
+            </div>
+            <a href="${winnerUrl}" target="_blank">
+                <div class="miner-item">
+                    <p class="bold">
+                        <span class="mdi mdi-party-popper"></span>
+                        ${formatAddress(winner)}
+                    </p>
+                    <small>Winner</small>
+                </div>
+            </a>
+            <div class="miner-item">
+                <p class="bold">
+                    ${reward} HYPERS
+                </p>
+                <small>Reward minted</small>
+            </div>
+            <a href="${minerUrl}" target="_blank">
+                <div class="miner-item">
+                    <p class="bold">
+                        <span class="mdi mdi-file-sign"></span>
+                        ${formatAddress(miner)}
+                    </p>
+                    <small>Block issuer</small>
+                </div>
+            </a>
+        </div>
+        <p style="margin-top: 20px;">Miners:</p>
         <div class="miners-list">
             ${items.join('')}
         </div>

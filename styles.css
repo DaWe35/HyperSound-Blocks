@@ -1,6 +1,6 @@
 :root {
     --background: #0f0f0f;
-    --text-primary: #ffffff;
+    --text-primary: #dbdbdb;
     --text-secondary: #888888;
     --button-border: #333333;
 }
@@ -19,7 +19,7 @@ body {
 }
 
 a {
-    color: #00ff00;
+    color: #dbdbdb;
     text-decoration: none;
 }
 
@@ -326,9 +326,8 @@ button:hover {
 
 .miners-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 20px;
-    margin-top: 20px;
 }
 
 .miner-item {
@@ -420,4 +419,8 @@ button:hover {
 
 .modal-button:hover {
     opacity: 0.9;
+}
+
+.bold {
+    font-weight: bold;
 }
