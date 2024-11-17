@@ -368,10 +368,12 @@ async function getBlockEvent(blockNumber) {
         cachedEvents[decoded.blockNumber] = event
         cachedWinners[decoded.blockNumber - WINNER_OFFSET] = decoded.miner
     }
+    
     if (cachedEvents[blockNumber]) {
         return cachedEvents[blockNumber]
     } else {
-        throw new Error(`No event found for block ${blockNumber}`)
+        console.log(`No event found for block ${blockNumber}`)
+        return null
     }
 }
 
@@ -382,6 +384,7 @@ async function getBlockMinerWinner(blockNumber) {
     if (LAST_HYPERS_BLOCK < blockNumber) return { winner: 'pending', miner: 'pending' }
     if(!cachedMiners[blockNumber]) {
         const event = await getBlockEvent(blockNumber)
+        if (!event) return { winner: 'unknown', miner: 'unknown' }
         const tx = await web3.eth.getTransaction(event.transactionHash)
         cachedMiners[blockNumber] = tx.from
     }
@@ -452,7 +455,11 @@ function formatAddress(address) {
     const knownAddresses = {
         '0xb82619C0336985e3EDe16B97b950E674018925Bb': 'KONKPool',
         '0x2099A5d5DA9db8a91a21b7a1Cf7f969a5D078C15': 'Machi',
-        '0x6B8c262CA939adbe3793D3eca519a9D64f74D184': 'Machi'
+        '0x6B8c262CA939adbe3793D3eca519a9D64f74D184': 'Machi',
+        '0xa0df6ADAa4f7e880b4B3C40147C6ae92124d88a8': 'v2 exploiter',
+        '0x8b3B7036A67aE1bCCB631Fa23fa69172f2592b19': 'v2 exploiter miner',
+        '0x4aBf167D88Be803B944617343Acb0b267E0eC265': 'v2 exploiter 1',
+        '0x11879103A01619fb9f982C75B1d5056520B57846': 'v2 exploiter 2',
     }
     
     return knownAddresses[address] || address.substring(38)
