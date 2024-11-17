@@ -460,6 +460,13 @@ function formatAddress(address) {
         '0x8b3B7036A67aE1bCCB631Fa23fa69172f2592b19': 'v2 exploiter miner',
         '0x4aBf167D88Be803B944617343Acb0b267E0eC265': 'v2 exploiter 1',
         '0x11879103A01619fb9f982C75B1d5056520B57846': 'v2 exploiter 2',
+        '0x4a5073642E143a9Ef35af6DED4d45bB711A27096': '60s miner',
+        '0x7F448F0435803744Bcda76afED4F17B0A6E0FB23': 'Big BadWolf',
+        '0x311111036921FfA417d03Ab1a9Aaff09429f3D98': 'Teim',
+        '0x379b1a0cD7330fC5e21a68cce1CdbD0A3E5C1Fc0': 'Julien',
+        '0xD8e1cB737Bd1608ec9Ee19E8D00F2d9e020fA6D3': 'Julien 2',
+        '0x526228544F39C0CBB5eC522682D0359d585E136D': 'Gra-Gra',
+        '0x19c1c04CA24D38157FC85614ba765C7f6f844C95': 'Im so f sorry',
     }
     
     return knownAddresses[address] || address.substring(38)
