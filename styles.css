@@ -26,12 +26,14 @@ a {
 .container {
     max-width: 1200px;
     margin: 0 auto;
+    padding: 20px;
 }
 
 header {
     display: flex;
     align-items: center;
     margin: 20px auto;
+    padding: 0 20px;
     max-width: 1200px;
 }
 
@@ -139,6 +141,7 @@ button:hover {
     text-decoration: none;
     font-size: 20px;
     margin-right: 20px;
+    margin-bottom: 20px;
     padding: 8px 16px;
     border: 1px solid var(--button-border);
     border-radius: 4px;
@@ -148,10 +151,6 @@ button:hover {
 .button-link:hover {
     background-color: rgba(255, 255, 255, 0.1);
     color: var(--text-primary);
-}
-
-#dextools-widget {
-    margin-top: 20px;
 }
 
 .blocks-section {
@@ -173,6 +172,7 @@ button:hover {
     cursor: grab;
     scrollbar-width: none;
     -ms-overflow-style: none;
+    padding-left: 20px;
 }
 
 .blocks-container::-webkit-scrollbar {

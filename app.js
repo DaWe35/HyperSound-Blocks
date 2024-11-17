@@ -243,8 +243,8 @@ function updateUI(values, tvlEth) {
 
     // Update gas price
     const gasPriceGwei = web3.utils.fromWei(values.gasPrice, 'gwei')
-    document.getElementById('gasPrice').textContent = `${parseFloat(gasPriceGwei).toFixed(4)} Gwei`
-    document.getElementById('gasPriceUsd').textContent = `$${(parseFloat(gasPriceGwei) * ethPrice * 0.000000001 * 25000000).toFixed(2)}`
+    document.getElementById('gasPrice').textContent = `${parseFloat(gasPriceGwei).toFixed(5)} Gwei`
+    document.getElementById('gasPriceUsd').textContent = `$${(parseFloat(gasPriceGwei) * ethPrice * 0.000000001 * 25000000).toFixed(3)}`
 }
 
 function formatTimeUntil(hours) {
@@ -722,7 +722,10 @@ async function updateAllMetrics() {
         updateUI({ ...decoded, ...values }, tvlEth)
         updateNextHalving(decoded.blockNumber, decoded.lastHalvingBlock, decoded.halvingInterval)
 
-        LAST_HYPERS_BLOCK = parseInt(decoded.blockNumber)
+        if (LAST_HYPERS_BLOCK !== parseInt(decoded.blockNumber)) {
+            LAST_HYPERS_BLOCK = parseInt(decoded.blockNumber)
+            await loadBlock(LAST_HYPERS_BLOCK)
+        }
         const isPendingBlockActive = document.getElementById('pendingBlock').classList.contains('active')
         if (isPendingBlockActive) {
             const blockTimeElem = document.querySelector('.block-detail-block-time')
@@ -734,8 +737,6 @@ async function updateAllMetrics() {
                 await updateBlockMiners(LAST_HYPERS_BLOCK + 1, CURRENT_MINERS)
             }
         }
-        console.log(`Updating block ${LAST_HYPERS_BLOCK}`)
-        await loadBlock(LAST_HYPERS_BLOCK)
     } catch (error) {
         console.error('Error updating metrics:', error)
         const metrics = ['lastBlock', 'totalSupply', 'minerReward', 'minersCount', 
@@ -765,6 +766,7 @@ async function init() {
         const pendingBlock = createPendingBlockElement()
         document.getElementById('blocksScroll').appendChild(pendingBlock)
         await updateAllMetrics()
+
         initializeInfiniteScroll()
         updateInterval = setInterval(updateAllMetrics, 1000)
         ethPriceInterval = setInterval(async () => {
@@ -843,6 +845,7 @@ function initializeInfiniteScroll() {
         if ((scrollWidth - (scrollLeft + clientWidth)) / clientWidth < 0.2) {
             const oldestBlock = Math.min(...Array.from(loadedBlocks))
             for (let i = 1; i <= 5; i++) {
+                await sleep(100)
                 await loadBlock(oldestBlock - i)
             }
         }
