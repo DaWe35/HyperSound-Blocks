@@ -3,6 +3,8 @@
     --text-primary: #dbdbdb;
     --text-secondary: #888888;
     --button-border: #333333;
+    --block-size: 170px;
+    --block-selection-border: inset 0px 0px 0px 1px rgba(255, 255, 255, 0.1);
 }
 
 * {
@@ -166,7 +168,7 @@ button:hover {
 .blocks-container {
     position: relative;
     overflow-x: auto;
-    padding: 20px 0;
+    padding: 40px 0 20px 0;
     scroll-behavior: auto;
     -webkit-overflow-scrolling: touch;
     width: 100%;
@@ -192,14 +194,14 @@ button:hover {
 }
 
 .block {
-    min-width: 200px;
+    min-width: var(--block-size);
+    height: var(--block-size);
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
     padding: 20px;
+    margin: 20px 10px;
     cursor: pointer;
     position: relative;
-    margin: 25px 0 25px 0;
-    border: 1px solid rgba(255, 255, 255, 0);
+    box-shadow: inset 0px 0px 0px 1px rgba(255, 255, 255, 0);
     transition: transform 2s ease-out;
 }
 
@@ -207,7 +209,7 @@ button:hover {
     background: rgba(255, 255, 255, 0.05);
 }
 
-#pendingBlock:before {
+.progress-bar {
     height: var(--fill-percentage);
     transition: top 1s linear;
     content: "";
@@ -217,13 +219,47 @@ button:hover {
     right: 0;
     background: rgba(255, 255, 255, 0.05);
     position: absolute;
+    transition: height 1s linear;
+}
+
+.block-decoration:before {
+    content: "";
+    width: calc(.16* var(--block-size));
+    height: var(--block-size);
+    position: absolute;
+    top: calc(-.096* var(--block-size));
+    left: calc(-.16* var(--block-size));
+    background-color: rgba(255, 255, 255, 0.03);
+    transform: skewY(50deg);
+    transform-origin: top;
+}
+
+.block-decoration:after {
+    content: "";
+    width: var(--block-size);
+    height: calc(.192* var(--block-size));
+    position: absolute;
+    top: calc(-.192* var(--block-size));
+    left: calc(-.16* var(--block-size));
+    background-color: rgba(255, 255, 255, 0.05);
+    transform: skew(40deg);
+    transform-origin: top;
 }
 
 .block.active {
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: var(--block-selection-border);
     z-index: 2;
     position: relative;
 }
+
+.block.active .block-decoration:after {
+    box-shadow: var(--block-selection-border);
+}
+
+.block.active .block-decoration:before {
+    box-shadow: var(--block-selection-border);
+}
+
 
 .block.active::after {
     content: '';
@@ -273,9 +309,9 @@ button:hover {
 
 .block-number {
     position: absolute;
-    top: -25px;
+    top: -60px;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(calc(-50% - 20px));
     color: var(--text-secondary);
     font-size: 14px;
 }

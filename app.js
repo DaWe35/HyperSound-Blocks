@@ -510,6 +510,7 @@ function createBlockElement(data) {
     block.className = 'block'
     block.id = `block-${data.blockNumber}`
     block.innerHTML = `
+        <div class="block-decoration"></div>
         <div class="block-number">#${data.blockNumber}</div>
         <div class="block-miner-count">
             ${data.minersCount}
@@ -535,7 +536,11 @@ function createPendingBlockElement() {
     const block = document.createElement('div')
     block.className = 'block'
     block.id = 'pendingBlock'
+    
+    // Add progress bar div
     block.innerHTML = `
+        <div class="progress-bar"></div>
+        <div class="block-decoration"></div>
         <div class="block-number" id="pendingBlockNumber"></div>
         <div class="block-miner-count">
             <span id="pendingBlockMinerCount">...</span>
