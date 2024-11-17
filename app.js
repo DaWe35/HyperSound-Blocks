@@ -1,4 +1,5 @@
 const GAS_CONTRACT_ADDRESS = '0x4300000000000000000000000000000000000002';
+const MULTICALL_ADDRESS = '0xcA11bde05977b3631167028862bE2a173976CA11';
 const INIT_MAX_SUPPLY = 21000000;
 const INITIAL_REWARD = 250;
 const HALVING_INTERVAL = 42000;
@@ -6,9 +7,7 @@ const HALVING_INTERVAL = 42000;
 const urlParams = new URLSearchParams(window.location.search);
 const VERSION = urlParams.get('version');
 
-let CONTRACT_ADDRESS, MULTICALL_ADDRESS, ABI, web3, contract, gasContract, ethPrice, updateInterval, ethPriceInterval
-
-MULTICALL_ADDRESS = '0xcA11bde05977b3631167028862bE2a173976CA11';
+let CONTRACT_ADDRESS, ABI, web3, contract, gasContract, multicallContract, ethPrice, updateInterval, ethPriceInterval
 
 if (VERSION === 'v1') {
     CONTRACT_ADDRESS = '0x7E82481423B09c78e4fd65D9C1473a36E5aEd405';
@@ -26,13 +25,15 @@ document.getElementById('contract-link').href = `https://blastscan.io/address/${
 // ABI Loading
 async function loadABIs() {
     try {
-        const [contractResponse, gasResponse] = await Promise.all([
+        const [contractResponse, gasResponse, multicallResponse] = await Promise.all([
             fetch(ABI),
-            fetch('/abi/gas.json')
+            fetch('/abi/gas.json'),
+            fetch('/abi/multicall.json')
         ]);
         const contractABI = await contractResponse.json();
         const gasABI = await gasResponse.json();
-        return { contractABI, gasABI };
+        const multicallABI = await multicallResponse.json();
+        return { contractABI, gasABI, multicallABI };
     } catch (error) {
         console.error('Error loading ABIs:', error);
         throw error;
@@ -130,11 +131,19 @@ function buildContractCalls() {
         },
         {
             target: CONTRACT_ADDRESS,
-            callData: contract.methods.minersPerBlockCount(currentBlockCache + 1).encodeABI()
+            callData: contract.methods.minersPerBlockCount(LAST_HYPERS_BLOCK + 1).encodeABI()
         },
         {
             target: CONTRACT_ADDRESS,
             callData: contract.methods.maxSupply().encodeABI()
+        },
+        {
+            target: MULTICALL_ADDRESS,
+            callData: multicallContract.methods.getBasefee().encodeABI()
+        },
+        {
+            target: MULTICALL_ADDRESS,
+            callData: multicallContract.methods.getEthBalance(CONTRACT_ADDRESS).encodeABI()
         }
     ];
 }
@@ -151,14 +160,15 @@ function decodeResults(results) {
         tokenValue: web3.eth.abi.decodeParameter('uint256', results[6]),
         gasParams: web3.eth.abi.decodeParameters(['uint256', 'uint256'], results[7]),
         minersCount: web3.eth.abi.decodeParameter('uint256', results[8]),
-        maxSupply: web3.eth.abi.decodeParameter('uint256', results[9])
+        maxSupply: web3.eth.abi.decodeParameter('uint256', results[9]),
+        baseFee: web3.eth.abi.decodeParameter('uint256', results[10]),
+        ethBalance: web3.eth.abi.decodeParameter('uint256', results[11])
     };
 }
 
 // TVL Calculations
-async function calculateTVL(gasParams) {
-    const balance = await web3.eth.getBalance(CONTRACT_ADDRESS);
-    const tvl = web3.utils.toBN(balance).add(web3.utils.toBN(gasParams[1]));
+async function calculateTVL(gasParams, ethBalance) {
+    const tvl = web3.utils.toBN(ethBalance).add(web3.utils.toBN(gasParams[1]));
     return web3.utils.fromWei(tvl, 'ether');
 }
 
@@ -183,6 +193,7 @@ function calculateValues(tokenValue, totalSupply, tvlEth) {
     };
 }
 
+let LAST_HYPERS_BLOCK = 0;
 // UI Updates
 function updateUI(values, tvlEth) {
     const {
@@ -193,10 +204,11 @@ function updateUI(values, tvlEth) {
     } = values;
 
     // Update metrics
+    LAST_HYPERS_BLOCK = blockNumber;
     document.getElementById('lastBlock').textContent = blockNumber;
     document.getElementById('totalSupply').textContent = formatNumber(Math.round(totalSupply/1e18));
     document.getElementById('minerReward').textContent = minerReward/1e18;
-    document.getElementById('minersCount').textContent = currentBlockCache == 0 ? '...' : minersCount;
+    document.getElementById('minersCount').textContent = LAST_HYPERS_BLOCK == 0 ? '...' : minersCount;
     
     // Update values
     document.getElementById('intrinsicValue').textContent = intrinsicValueUsd;
@@ -221,11 +233,7 @@ function updateUI(values, tvlEth) {
     document.getElementById('lastBlockTime').textContent = `${formatSecondsAgo(secondsAgo)}`;
     updatePendingBlockProgress(secondsAgo);
 
-    // Update pending block
-    if (currentBlockCache !== 0) {
-        // document.getElementById('pendingBlockNumber').textContent = currentBlockCache + 1;
-        document.getElementById('pendingBlockMinerCount').textContent = minersCount;
-    }
+    document.getElementById('pendingBlockMinerCount').textContent = minersCount;
     document.getElementById('pendingBlockReward').textContent = minerReward/1e18;
     document.getElementById('pendingBlockWinner').textContent = `${secondsAgo}s`;
 
@@ -264,16 +272,6 @@ function updateNextHalving(currentBlock, lastHalvingBlock, halvingInterval) {
     document.getElementById('nextHalving').textContent = formatTimeUntil(hoursUntilHalving);
 }
 
-async function getWinner(blockNumber) {
-    if (blockNumber > currentBlockCache) return 'pending';
-    return '0x0000000000000000000000000000000000000000';
-}
-
-async function getMiner(blockNumber) {
-    if (blockNumber > currentBlockCache) return 'pending';
-    return '0x0000000000000000000000000000000000000000';
-}
-
 function calculateReward(blockNumber) {
     // Initial reward is 250 HYPERS
     let reward = 250;
@@ -287,7 +285,6 @@ function calculateReward(blockNumber) {
     return reward;
 }
 
-let currentBlockCache = 0;
 let loadedBlocks = new Set();
 
 async function loadBlock(blockNumber) {
@@ -296,7 +293,7 @@ async function loadBlock(blockNumber) {
     try {
         const blockData = await fetchBlockData(blockNumber);
         const blockElement = createBlockElement(blockData);
-        insertBlockIntoDOM(blockElement, blockNumber);
+        await insertBlockIntoDOM(blockElement, blockNumber);
         loadedBlocks.add(blockNumber);
     } catch (error) {
         console.error(`Error loading block ${blockNumber}:`, error);
@@ -304,10 +301,9 @@ async function loadBlock(blockNumber) {
 }
 
 async function fetchBlockData(blockNumber) {
-    const [minersCount, winner, miner] = await Promise.all([
+    const [minersCount, { winner, miner }] = await Promise.all([
         contract.methods.minersPerBlockCount(blockNumber).call(),
-        getWinner(blockNumber),
-        getMiner(blockNumber)
+        getBlockMinerWinner(blockNumber)
     ]);
 
     return {
@@ -319,20 +315,88 @@ async function fetchBlockData(blockNumber) {
     };
 }
 
-function insertBlockIntoDOM(blockElement, blockNumber) {
+
+let earliestEthBlockFetched = null;
+let latestEthBLockFetched = null;
+let cachedEvents = {};
+
+async function getBlockEvent(blockNumber) {
+    if (cachedEvents[blockNumber]) return cachedEvents[blockNumber];
+
     const blocksScroll = document.getElementById('blocksScroll');
     const existingBlocks = Array.from(blocksScroll.children);
+    let fromBlock, toBlock;
     
-    const isNewBlock = isNewerThanExisting(blockNumber, existingBlocks);
+    // Initialize these values if they're null
+    if (earliestEthBlockFetched === null || latestEthBLockFetched === null) {
+        earliestEthBlockFetched = latestEthBLockFetched = await web3.eth.getBlockNumber();
+    }
+    
+    if (isNewBlock(blockNumber, existingBlocks)) {
+        fromBlock = latestEthBLockFetched - 600;
+        toBlock = 'latest';
+    } else {
+        fromBlock = earliestEthBlockFetched - 600;
+        toBlock = earliestEthBlockFetched;
+    }
 
-    if (isNewBlock) {
+    const newBlockTopic = '0x58ab9d8b9ae9ad7e2baee835f3d3fe920b93baf574a51df42c0390491f7297e9';
+    const filter = {
+        address: CONTRACT_ADDRESS,
+        topics: [newBlockTopic],
+        fromBlock: fromBlock,
+        toBlock: toBlock
+    };
+    const events = await web3.eth.getPastLogs(filter);
+    
+    for (const event of events) {
+        if (event.blockNumber > latestEthBLockFetched) {
+            latestEthBLockFetched = event.blockNumber;
+        }
+        if (event.blockNumber < earliestEthBlockFetched) {
+            earliestEthBlockFetched = event.blockNumber;
+        }
+
+        const decoded = web3.eth.abi.decodeLog([
+            { type: 'uint256', name: 'blockNumber', indexed: false },
+            { type: 'address', name: 'miner', indexed: false }
+        ], event.data, event.topics);
+
+        cachedEvents[decoded.blockNumber] = event;
+        cachedWinners[decoded.blockNumber - 1] = decoded.miner;
+    }
+    if (cachedEvents[blockNumber]) {
+        return cachedEvents[blockNumber];
+    } else {
+        throw new Error(`No event found for block ${blockNumber}`);
+    }
+}
+
+
+let cachedWinners = {};
+let cachedMiners = {};
+async function getBlockMinerWinner(blockNumber) {
+    if (LAST_HYPERS_BLOCK < blockNumber) return { winner: 'pending', miner: 'pending' };
+    const winner = LAST_HYPERS_BLOCK <= blockNumber ? 'pending' : cachedWinners[blockNumber];
+    if(!cachedMiners[blockNumber]) {
+        const event = await getBlockEvent(blockNumber);
+        const tx = await web3.eth.getTransaction(event.transactionHash);
+        cachedMiners[blockNumber] = tx.from;
+    }
+    return { winner: winner, miner: cachedMiners[blockNumber] };
+}
+
+async function insertBlockIntoDOM(blockElement, blockNumber) {
+    const blocksScroll = document.getElementById('blocksScroll');
+    const existingBlocks = Array.from(blocksScroll.children);
+    if (isNewBlock(blockNumber, existingBlocks)) {
         insertNewBlock(blockElement, existingBlocks, blocksScroll);
     } else {
         insertHistoricalBlock(blockElement, existingBlocks, blocksScroll);
     }
 }
 
-function isNewerThanExisting(blockNumber, existingBlocks) {
+function isNewBlock(blockNumber, existingBlocks) {
     return existingBlocks.length > 1 && 
         blockNumber > parseInt(existingBlocks[1].querySelector('.block-number').textContent.slice(1));
 }
@@ -353,6 +417,9 @@ function insertNewBlock(blockElement, existingBlocks, blocksScroll) {
     existingBlocks.slice(1).forEach(block => {
         block.classList.add('slide-in');
     });
+
+    // update latest -1 block winner
+    document.getElementById(`block-${LAST_HYPERS_BLOCK - 1}`).querySelector('.block-winner-address').textContent = formatAddress(cachedWinners[LAST_HYPERS_BLOCK - 1]);
 }
 
 function insertHistoricalBlock(blockElement, existingBlocks, blocksScroll) {
@@ -375,6 +442,7 @@ function findInsertPosition(blockElement, existingBlocks) {
 
 function formatAddress(address) {
     if (address === 'pending') return 'Pending...';
+    if (address === 'unknown' || typeof address === 'undefined') return 'Unknown';
     
     const knownAddresses = {
         '0xb82619C0336985e3EDe16B97b950E674018925Bb': 'KONKPool',
@@ -395,9 +463,17 @@ function createBlockElement(data) {
             ${data.minersCount}
             <span class="mdi mdi-pickaxe"></span>
         </div>
-        <div class="block-winner">${formatAddress(data.winner)}</div>
-        <div class="block-reward">${data.reward} $HYPERS</div>
-        <div class="block-miner">${formatAddress(data.miner)}</div>
+        <div class="block-winner">
+            <span class="mdi mdi-party-popper"></span>
+            <span class="block-winner-address">${formatAddress(data.winner)}</span>
+        </div>
+        <div class="block-reward">
+            won ${data.reward} HYPERS
+        </div>
+        <div class="block-miner">
+            <span class="mdi mdi-file-sign"></span>
+            ${formatAddress(data.miner)}
+        </div>
     `;
     
     block.onclick = () => showBlockMiners(data.blockNumber, data.minersCount);
@@ -422,7 +498,7 @@ function createPendingBlockElement() {
         <div class="block-miner">Pending block</div>
     `;
     
-    block.onclick = () => showBlockMiners(parseInt(document.getElementById('lastBlock').textContent) + 1, parseInt(document.getElementById('pendingBlockMinerCount').textContent));
+    block.onclick = () => showBlockMiners(LAST_HYPERS_BLOCK + 1, parseInt(document.getElementById('pendingBlockMinerCount').textContent));
     return block;
 }
 
@@ -455,8 +531,6 @@ async function getBlockMiners(blockNumber, totalMiners) {
                 const minerAddress = web3.eth.abi.decodeParameter('address', results[i]);
                 miners[minerAddress] = (miners[minerAddress] || 0) + 1;
             }
-            
-            console.log(`Loaded miners ${startIndex} to ${endIndex} for block ${blockNumber}`);
         }
         return miners;
         
@@ -471,7 +545,7 @@ async function showBlockMiners(blockNumber, minersCount) {
     // Remove active class from all blocks first
     document.querySelectorAll('.block').forEach(b => b.classList.remove('active'));
     let blockElement;
-    if (blockNumber > currentBlockCache) {
+    if (blockNumber > LAST_HYPERS_BLOCK) {
         blockElement = document.getElementById(`pendingBlock`);
     } else {
         blockElement = document.getElementById(`block-${blockNumber}`);
@@ -512,74 +586,76 @@ async function renderBlockDetails(blockNumber, minersCount, miners) {
                     <span class="miner-count">${count}
                         <span class="mdi mdi-pickaxe"></span>
                     </span>
-                    <br>
+                    <p><small>${(count / minersCount * 100).toFixed(2)}% chance</small></p>
                     <a href="https://blastscan.io/address/${address}" target="_blank">
                         ${formatAddress(address)}
                     </a>
                 </div>`);
 
-    const winner = await getWinner(blockNumber);
+    const { winner, miner } = await getBlockMinerWinner(blockNumber);
+    let minerUrl, winnerUrl;
+    if (blockNumber > LAST_HYPERS_BLOCK) {
+        minerUrl = '#';
+        winnerUrl = '#';
+    } else {
+        minerUrl = `https://blastscan.io/tx/${cachedEvents[blockNumber].transactionHash}`;
+        winnerUrl = `https://blastscan.io/tx/${cachedEvents[blockNumber + 1]?.transactionHash || 'pending'}`;
+    }
     const reward = calculateReward(blockNumber);
-    const miner = await getMiner(blockNumber);
-    const displayBlockNumber = blockNumber > currentBlockCache ? 'Pending block...' : `Block #${blockNumber}`;
     return `
-        <p>Block #${blockNumber > currentBlockCache ? 'pending' : blockNumber}</p>
-        <p>Miners in block: ${minersCount} <span class="mdi mdi-pickaxe"></span></p>
-        <p>Winner: <a href="https://blastscan.io/address/${winner}" target="_blank">${formatAddress(winner)}</a></p>
-        <p>Reward: ${reward} $HYPERS</p>
-        <p>Miner: <a href="https://blastscan.io/address/${miner}" target="_blank">${formatAddress(miner)}</a></p>
+        <p>Block #${blockNumber > LAST_HYPERS_BLOCK ? 'pending' : blockNumber}</p>
+        <p>
+            <span class="mdi mdi-pickaxe"></span>
+            Miners in block: <b>${minersCount}</b>
+        </p>
+        <p>
+            <span class="mdi mdi-party-popper"></span>
+            Winner: 
+            <b><a href="${winnerUrl}" target="_blank">${formatAddress(winner)}</a></b>
+        </p>
+        <p>
+            <span class="mdi mdi-seal"></span>
+            Reward: <b>${reward} HYPERS</b>
+        </p>
+        <p>
+            <span class="mdi mdi-file-sign"></span>
+            Block issuer: 
+            <b><a href="${minerUrl}" target="_blank">${formatAddress(miner)}</a></b>
+        </p>
         <div class="miners-list">
             ${items.join('')}
         </div>
     `;
 }
 
-async function lowGasFee() {
-    try {
-        const latestBlock = await web3.eth.getBlock('latest');
-        const baseFee = BigInt(latestBlock.baseFeePerGas);
-        const safeLow = baseFee + (baseFee * BigInt(6) / BigInt(100));
-        console.log('Safe low gas fee:', safeLow);
-        return safeLow;
-    } catch (error) {
-        console.error('Error fetching current base fee:');
-        console.error(error.stack);
-        return null;
-    }
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Main Update Function
 let currentMinerCache = null;
 async function updateAllMetrics() {
     try {
         const calls = buildContractCalls();
-        const [gasPrice, results] = await Promise.all([
-            lowGasFee(),
-            multicall(calls)
-        ]);
-        
+        const results = await multicall(calls);
+
         const decoded = decodeResults(results);
-        const tvlEth = await calculateTVL(decoded.gasParams);
+        const tvlEth = await calculateTVL(decoded.gasParams, decoded.ethBalance);
         const values = calculateValues(decoded.tokenValue, decoded.totalSupply, tvlEth);
         
-        // Convert BigInt to string for web3.utils.fromWei
-        values.gasPrice = gasPrice ? gasPrice.toString() : '0';
+        const baseFee = web3.utils.toBN(decoded.baseFee);
+        const gasPrice = baseFee.add(baseFee.muln(6).divn(100));
+        values.gasPrice = gasPrice.toString();
         
         updateUI({ ...decoded, ...values }, tvlEth);
         updateNextHalving(decoded.blockNumber, decoded.lastHalvingBlock, decoded.halvingInterval);
 
-        currentBlockCache = parseInt(decoded.blockNumber);
+        LAST_HYPERS_BLOCK = parseInt(decoded.blockNumber);
         const isPendingBlockActive = document.getElementById('pendingBlock').classList.contains('active');
         if (isPendingBlockActive && currentMinerCache !== parseInt(decoded.minersCount)) {
             currentMinerCache = parseInt(decoded.minersCount);
-            await updateBlockMiners(currentBlockCache + 1, currentMinerCache);
+            await updateBlockMiners(LAST_HYPERS_BLOCK + 1, currentMinerCache);
         }
-        
-        // Load latest blocks
-        const currentBlock = parseInt(decoded.blockNumber);
-        for (let i = 0; i < 10; i++) {
-            await loadBlock(currentBlock - i);
-        }
+        await loadBlock(LAST_HYPERS_BLOCK);
     } catch (error) {
         console.error('Error updating metrics:', error);
         const metrics = ['lastBlock', 'totalSupply', 'minerReward', 'minersCount', 
@@ -595,7 +671,7 @@ async function init() {
         if (updateInterval) clearInterval(updateInterval);
         if (ethPriceInterval) clearInterval(ethPriceInterval);
 
-        const { contractABI, gasABI } = await loadABIs();
+        const { contractABI, gasABI, multicallABI } = await loadABIs();
         ethPrice = await getEthPrice();
         if (!ethPrice) {
             console.error('Failed to get ETH price');
@@ -605,6 +681,7 @@ async function init() {
         web3 = new Web3('https://rpc.blast.io');
         contract = new web3.eth.Contract(contractABI, CONTRACT_ADDRESS);
         gasContract = new web3.eth.Contract(gasABI, GAS_CONTRACT_ADDRESS);
+        multicallContract = new web3.eth.Contract(multicallABI, MULTICALL_ADDRESS);
         const pendingBlock = createPendingBlockElement();
         document.getElementById('blocksScroll').appendChild(pendingBlock);
         await updateAllMetrics();
@@ -614,8 +691,16 @@ async function init() {
             ethPrice = await getEthPrice();
         }, 60000);
         initializeExternalLinks();
+        loadInitialBlocks(LAST_HYPERS_BLOCK - 1)
     } catch (error) {
         console.error('Initialization error:', error);
+    }
+}
+
+async function loadInitialBlocks(blockNumber) {
+    for (let i = 0; i < 9; i++) {
+        await sleep(100)
+        await loadBlock(blockNumber - i);
     }
 }
 
@@ -773,6 +858,3 @@ function initializeExternalLinks() {
         }
     });
 }
-
-// Add this line to your init() function
-initializeExternalLinks(); 

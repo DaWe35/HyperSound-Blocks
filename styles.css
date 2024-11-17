@@ -19,7 +19,8 @@ body {
 }
 
 a {
-    color: white;
+    color: #00ff00;
+    text-decoration: none;
 }
 
 .container {
@@ -43,6 +44,7 @@ header {
 
 .logo .mdi {
     font-size: 24px;
+    color: #FFF;
 }
 
 .logo-img {
