@@ -495,8 +495,21 @@ button:hover {
     -webkit-mask-size: contain;
     mask-size: contain;
     color: transparent !important;
+    -webkit-mask-image: var(--mdi-party-popper);
+    mask-image: var(--mdi-party-popper);
+    background-size: cover;
+    background-position: center;
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    vertical-align: middle;
 }
 
 .blockie-icon.mdi::before {
     display: none;
+}
+
+.blockie-img {
+    vertical-align: middle;
+    border-radius: 50%;
 }
