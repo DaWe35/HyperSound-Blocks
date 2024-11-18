@@ -365,13 +365,19 @@ button:hover {
 .miners-list {
     display: grid;
     gap: 20px;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(1, 1fr);
 }
 
 .block-head-list {
     display: grid;
     gap: 0px;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(1, 1fr);
+}
+
+@media screen and (min-width: 500px) {
+    .miners-list, .block-head-list {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 @media screen and (min-width: 768px) {
