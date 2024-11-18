@@ -216,9 +216,9 @@ function updateUI(values, tvlEth) {
 
     // Update metrics
     LAST_HYPERS_BLOCK = blockNumber
-    document.getElementById('lastBlock').textContent = blockNumber
     document.getElementById('totalSupply').textContent = formatNumber(Math.round(totalSupply/1e18))
     document.getElementById('minerReward').textContent = minerReward/1e18
+    document.getElementById('minerRewardUsd').textContent = (minerReward/1e18 * intrinsicValueUsd).toFixed(3)
     document.getElementById('minersCount').textContent = LAST_HYPERS_BLOCK == 0 ? '...' : minersCount
     
     // Update values
@@ -232,16 +232,13 @@ function updateUI(values, tvlEth) {
 
     // Update tokens metrics
     const burned = calculateBurnedTokens(maxSupply/1e18)
-    document.getElementById('burnedAmount').textContent = formatNumber(Math.round(burned.amount))
-    document.getElementById('burnedPercentage').textContent = burned.percentage
+    document.getElementById('burnedPercentage').textContent = burned.percentage.toFixed(0)
 
     const mined = calculateMinedTokens(burned.amount, totalSupply/1e18)
-    document.getElementById('minedPercentage').textContent = mined.percentage
-    document.getElementById('minedAmount').textContent = formatNumber(Math.round(mined.amount))
+    document.getElementById('minedPercentage').textContent = mined.percentage.toFixed(0)
 
     // Update time metrics
     LAST_HYPERS_BLOCK_TIME = Math.floor((Date.now() / 1000) - lastBlockTime)
-    document.getElementById('lastBlockTime').textContent = `${formatSeconds(LAST_HYPERS_BLOCK_TIME)}`
     updatePendingBlockProgress(LAST_HYPERS_BLOCK_TIME)
 
     document.getElementById('pendingBlockMinerCount').textContent = minersCount
@@ -790,7 +787,13 @@ async function loadInitialBlocks(blockNumber) {
 }
 
 function formatNumber(num) {
-    return new Intl.NumberFormat('en-US').format(parseFloat(num))
+    num = parseFloat(num)
+    if (num >= 1000000) {
+        return (num / 1000000).toFixed(0) + 'M'
+    } else if (num >= 1000) {
+        return (num / 1000).toFixed(0) + 'k'
+    }
+    return new Intl.NumberFormat('en-US').format(num)
 }
 
 function calculateMinedTokens(burnedAmount, totalSupply) {
@@ -800,7 +803,7 @@ function calculateMinedTokens(burnedAmount, totalSupply) {
 
     return {
         amount: totalMined,
-        percentage: percentage.toFixed(2)
+        percentage: percentage
     }
 }
 
@@ -811,7 +814,7 @@ function calculateBurnedTokens(maxSupply) {
     
     return {
         amount: burnedAmount,
-        percentage: burnedPercentage.toFixed(2)
+        percentage: burnedPercentage
     }
 }
 

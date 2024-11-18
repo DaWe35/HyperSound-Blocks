@@ -52,7 +52,6 @@
     </div>
 
     <div class="container">
-
         <div class="block-details" id="blockDetails">
             <!-- Miners list will appear here when a block is clicked -->
         </div>
@@ -83,21 +82,24 @@
                     TVL
                 </div>
                 <div class="metric-value">
+                    $<span id="tvlUsd">...</span>
+                </div>
+                <div class="metric-secondary">
                     <span id="tvl">...</span><span class="mdi mdi-ethereum"></span>
                 </div>
-                <div class="metric-secondary">$<span id="tvlUsd">...</span></div>
             </div>
 
             <div class="metric">
                 <div class="metric-label">CURRENT SUPPLY</div>
-                <div class="metric-value"><span id="totalSupply">...</span></div>
-                <div class="metric-secondary"><span id="maxSupply">...</span> max</div>
-            </div>
-
-            <div class="metric">
-                <div class="metric-label">BURNED TOKENS</div>
-                <div class="metric-value"><span id="burnedAmount">...</span></div>
-                <div class="metric-secondary"><span id="burnedPercentage">...</span>% of supply</div>
+                <div class="metric-value">
+                    <span id="totalSupply">...</span>
+                    <span class="metric-secondary">
+                        (<span id="maxSupply">...</span> max)
+                    </span>
+                </div>
+                <div class="metric-secondary">
+                    <span id="burnedPercentage">...</span>% burned, <span id="minedPercentage">...</span>% mined
+                </div>
             </div>
 
             <div class="metric">
@@ -107,21 +109,14 @@
             </div>
 
             <div class="metric">
+                <div class="metric-label">MINER REWARD</div>
+                <div class="metric-value"><span id="minerReward">...</span></div>
+                <div class="metric-secondary">$<span id="minerRewardUsd">...</span> intrinsic</div>
+            </div>
+
+            <div class="metric">
                 <div class="metric-label">NEXT HALVING</div>
-                <div class="metric-value">~<span id="nextHalving">...</span></div>
-                <div class="metric-secondary">Reward: <span id="minerReward">...</span> HYPERS</div>
-            </div>
-
-            <div class="metric">
-                <div class="metric-label">MINED TOKENS</div>
-                <div class="metric-value"><span id="minedPercentage">...</span>%</div>
-                <div class="metric-secondary"><span id="minedAmount">...</span></div>
-            </div>
-
-            <div class="metric">
-                <div class="metric-label">LAST BLOCK</div>
-                <div class="metric-value"><span id="lastBlockTime">...</span> ago</div>
-                <div class="metric-secondary"><span id="lastBlock">...</span></div>
+                <div class="metric-value"><span id="nextHalving">...</span></div>
             </div>
 
             <div class="metric">
