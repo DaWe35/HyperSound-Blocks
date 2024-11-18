@@ -524,7 +524,37 @@ function findInsertPosition(blockElement, existingBlocks) {
     })
 }
 
-function formatAddress(address) {
+function createBlockie(address, size = 8, scale = 3, isIcon = false) {
+    if (address === 'pending' || address === 'unknown' || typeof address === 'undefined') {
+        return ''
+    }
+    
+    const canvas = blockies.create({
+        seed: address.toLowerCase(),
+        size: size,
+        scale: scale
+    })
+    
+    if (isIcon) {
+        // Return a div that uses the blockie as background with MDI icon mask
+        return `<span class="blockie-icon mdi mdi-party-popper" style="
+            -webkit-mask-image: var(--mdi-party-popper);
+            mask-image: var(--mdi-party-popper);
+            background-image: url('${canvas.toDataURL()}');
+            background-size: cover;
+            background-position: center;
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            vertical-align: middle;
+            margin-right: 5px;
+        "></span>`
+    }
+    
+    return `<img src="${canvas.toDataURL()}" style="width: ${size * scale}px; height: ${size * scale}px; border-radius: 50%; vertical-align: middle; margin-right: 5px;" />`
+}
+
+function formatAddress(address, useIconBlockie = false) {
     if (address === 'pending') return 'Pending...'
     if (address === 'unknown' || typeof address === 'undefined') return 'Unknown'
     
@@ -550,6 +580,7 @@ function formatAddress(address) {
 
 function createBlockElement(data) {
     const block = document.createElement('div')
+    
     let winnerAddress
     if (data.winner === 'pending') {
         winnerAddress = `<small style="color: var(--text-secondary);">Pending winner...</small>`
@@ -676,9 +707,8 @@ async function renderBlockDetails(blockNumber, minersCount, miners) {
                         <span class="mdi mdi-pickaxe"></span>
                     </p>
                     <p><small>${(count / minersCount * 100).toFixed(2)}% chance</small></p>
-                    ${winner === address ? '<span class="mdi mdi-party-popper"></span>' : ''}
                     <a href="https://blastscan.io/address/${address}" target="_blank">
-                        <b>${formatAddress(address)}</b>
+                        <b>${createBlockie(address, 8, 3, false)}${formatAddress(address)}</b>
                     </a>
                 </div>`)
 
@@ -708,14 +738,14 @@ async function renderBlockDetails(blockNumber, minersCount, miners) {
                 <span class="mdi mdi-party-popper"></span>
                 Winner: 
                 <a href="${winnerUrl}" title="${winner}" target="_blank" class="bold">
-                    ${formatAddress(winner)}
+                    ${createBlockie(winner, 8, 2, false)}${formatAddress(winner)}
                 </a>
             </div>
             <div class="block-head-item" title="${formatAddress(miner)} finalized this block">
                 <span class="mdi mdi-file-sign"></span>
                 Block issuer:
                 <a href="${minerUrl}" title="${miner}" target="_blank" class="bold">
-                    ${formatAddress(miner)}
+                ${createBlockie(miner, 8, 2, false)}${formatAddress(miner)}
                 </a>
             </div>
         </div>
