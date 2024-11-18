@@ -476,34 +476,6 @@ function insertNewBlock(blockElement, existingBlocks, blocksScroll) {
     const lastBlock = document.getElementById(`block-${LAST_HYPERS_BLOCK - 1}`)
     const winnerString = `<span class="mdi mdi-party-popper"></span> ${formatAddress(cachedWinners[LAST_HYPERS_BLOCK - 1])}`
     lastBlock.querySelector('.block-winner').innerHTML = winnerString
-    setTimeout(() => winnerConfetti(lastBlock), 1000)
-}
-
-function winnerConfetti(lastBlockElem) {
-    const lastBlockPopper = lastBlockElem.querySelector('.mdi-party-popper')
-    const position = calcElemPosition(lastBlockPopper)
-    confetti({
-        angle: 45,
-        spread: 35,
-        particleCount: 50,
-        scalar: 0.6,
-        origin: { x: position.x, y: position.y },
-        decay: 0.9,
-        startVelocity: 20,
-        ticks: 80,
-        disableForReducedMotion: true
-    });
-}
-
-// Return two numbers between 0-1 for the position of the element on the screen
-function calcElemPosition(elem) {
-    const position = elem.getBoundingClientRect()
-    const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
-    const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
-    return {
-        x: position.right / vw,
-        y: position.top / vh
-    }
 }
 
 function insertHistoricalBlock(blockElement, existingBlocks, blocksScroll) {
