@@ -1,5 +1,6 @@
 const GAS_CONTRACT_ADDRESS = '0x4300000000000000000000000000000000000002'
 const MULTICALL_ADDRESS = '0xcA11bde05977b3631167028862bE2a173976CA11'
+const BATCH_MINERS_ADDRESS = '0x46b83472F2a3A51d5F5b222139b13Df6Bf942CC8'
 const INIT_MAX_SUPPLY = 21000000
 const INITIAL_REWARD = 250
 const HALVING_INTERVAL = 42000
@@ -7,19 +8,19 @@ const HALVING_INTERVAL = 42000
 const urlParams = new URLSearchParams(window.location.search)
 const VERSION = urlParams.get('v')
 
-let CONTRACT_ADDRESS, ABI, web3, contract, gasContract, multicallContract, ethPrice, updateInterval, ethPriceInterval, WINNER_OFFSET
+let CONTRACT_ADDRESS, ABI, web3, contract, gasContract, multicallContract, batchMinersContract, ethPrice, updateInterval, ethPriceInterval, WINNER_OFFSET
 
 if (VERSION === '1') {
     CONTRACT_ADDRESS = '0x7E82481423B09c78e4fd65D9C1473a36E5aEd405'
-    ABI = '/abi/v1.json'
+    ABI = '/contracts/abi/v1.json'
     WINNER_OFFSET = 0
 } else if (VERSION === '2') {
     CONTRACT_ADDRESS = '0x22B309977027D4987C3463774D7046d5136CB14a'
-    ABI = '/abi/v2.json'
+    ABI = '/contracts/abi/v2.json'
     WINNER_OFFSET = 0
 } else { // v3
     CONTRACT_ADDRESS = '0xF8797dB8a9EeD416Ca14e8dFaEde2BF4E1aabFC3'
-    ABI = '/abi/v3.json'
+    ABI = '/contracts/abi/v3.json'
     WINNER_OFFSET = 1
 }
 
@@ -28,15 +29,17 @@ document.getElementById('contract-link').href = `https://blastscan.io/address/${
 // ABI Loading
 async function loadABIs() {
     try {
-        const [contractResponse, gasResponse, multicallResponse] = await Promise.all([
+        const [contractResponse, gasResponse, multicallResponse, batchMinersResponse] = await Promise.all([
             fetch(ABI),
-            fetch('/abi/gas.json'),
-            fetch('/abi/multicall.json')
+            fetch('/contracts/abi/gas.json'),
+            fetch('/contracts/abi/multicall.json'),
+            fetch('/contracts/abi/batchminers.json')
         ])
         const contractABI = await contractResponse.json()
         const gasABI = await gasResponse.json()
         const multicallABI = await multicallResponse.json()
-        return { contractABI, gasABI, multicallABI }
+        const batchMinersABI = await batchMinersResponse.json()
+        return { contractABI, gasABI, multicallABI, batchMinersABI }
     } catch (error) {
         console.error('Error loading ABIs:', error)
         throw error
@@ -560,7 +563,7 @@ function createPendingBlockElement() {
     return block
 }
 
-async function getBlockMiners(blockNumber, totalMiners) {
+async function getBlockMinersOld(blockNumber, totalMiners) {
     const BATCH_SIZE = 5000; // Number of miners to fetch per multicall
     const miners = {}
     
@@ -592,6 +595,23 @@ async function getBlockMiners(blockNumber, totalMiners) {
         }
         return miners
         
+    } catch (error) {
+        console.error(`Error fetching miners for block ${blockNumber}:`, error)
+        return []
+    }
+}
+
+async function getBlockMiners(blockNumber) {
+    try {
+        const miners = {}
+        const minersArray = await batchMinersContract.methods.aggregateMiners(CONTRACT_ADDRESS, blockNumber).call()
+
+        // format to an array like [ miner1: 10, miner2: 20 ]
+        for (let i = 0; i < minersArray.length; i++) {
+            const minerAddress = minersArray[i].minerAddress
+            miners[minerAddress] = (miners[minerAddress] || 0) + parseInt(minersArray[i].mineCount)
+        }
+        return miners
     } catch (error) {
         console.error(`Error fetching miners for block ${blockNumber}:`, error)
         return []
@@ -757,7 +777,7 @@ async function init() {
         if (updateInterval) clearInterval(updateInterval)
         if (ethPriceInterval) clearInterval(ethPriceInterval)
 
-        const { contractABI, gasABI, multicallABI } = await loadABIs()
+        const { contractABI, gasABI, multicallABI, batchMinersABI } = await loadABIs()
         ethPrice = await getEthPrice()
         if (!ethPrice) {
             console.error('Failed to get ETH price')
@@ -768,6 +788,7 @@ async function init() {
         contract = new web3.eth.Contract(contractABI, CONTRACT_ADDRESS)
         gasContract = new web3.eth.Contract(gasABI, GAS_CONTRACT_ADDRESS)
         multicallContract = new web3.eth.Contract(multicallABI, MULTICALL_ADDRESS)
+        batchMinersContract = new web3.eth.Contract(batchMinersABI, BATCH_MINERS_ADDRESS)
         const pendingBlock = createPendingBlockElement()
         document.getElementById('blocksScroll').appendChild(pendingBlock)
         await updateAllMetrics()
