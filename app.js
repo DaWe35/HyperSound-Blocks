@@ -264,6 +264,7 @@ function formatTimeUntil(hours) {
 }
 
 function formatSeconds(seconds) {
+    if (!seconds) return 'Unknown'
     if (seconds < 300) {
         return `${seconds}s`
     } else if (seconds < 86400) {
@@ -391,12 +392,13 @@ let cachedBlockTimes = {}
 async function fetchBlockExtra(blockNumber) {
     if(!cachedMiners[blockNumber]) {
         const event = await getNewBlockEvent(blockNumber)
-        if (!event) return { winner: 'unknown', miner: 'unknown' }
+        if (!event) return false
         const tx = await web3.eth.getTransaction(event.transactionHash)
         const block = await web3.eth.getBlock(tx.blockNumber)
         cachedMiners[blockNumber] = tx.from
         cachedBlockTimes[blockNumber] = block.timestamp
     }
+    return true
 }
 
 
@@ -563,44 +565,6 @@ function createPendingBlockElement() {
     return block
 }
 
-async function getBlockMinersOld(blockNumber, totalMiners) {
-    const BATCH_SIZE = 5000; // Number of miners to fetch per multicall
-    const miners = {}
-    
-    try {
-        // Calculate number of batches needed
-        const batchCount = Math.ceil(totalMiners / BATCH_SIZE)
-        
-        for (let batchIndex = 0; batchIndex < batchCount; batchIndex++) {
-            const startIndex = batchIndex * BATCH_SIZE
-            const endIndex = Math.min(startIndex + BATCH_SIZE, totalMiners)
-            
-            // Build calls for this batch
-            const calls = []
-            for (let minerIndex = startIndex; minerIndex < endIndex; minerIndex++) {
-                calls.push({
-                    target: CONTRACT_ADDRESS,
-                    callData: contract.methods.minersPerBlock(blockNumber, minerIndex).encodeABI()
-                })
-            }
-            
-            // Execute multicall for this batch
-            const results = await multicall(calls)
-            
-            // Decode results and add to miners array
-            for (let i = 0; i < results.length; i++) {
-                const minerAddress = web3.eth.abi.decodeParameter('address', results[i])
-                miners[minerAddress] = (miners[minerAddress] || 0) + 1
-            }
-        }
-        return miners
-        
-    } catch (error) {
-        console.error(`Error fetching miners for block ${blockNumber}:`, error)
-        return []
-    }
-}
-
 async function getBlockMiners(blockNumber) {
     try {
         const miners = {}
@@ -650,7 +614,7 @@ async function updateBlockMiners(blockNumber, minersCount) {
 
 async function renderBlockDetails(blockNumber, minersCount, miners) {
     const { winner, miner } = await getBlockMinerWinner(blockNumber)
-    const blockTime = await getBlockTime(blockNumber) || '...'
+    const blockTime = await getBlockTime(blockNumber)
 
     const isLoading = miners === null
     const items = isLoading 
@@ -675,7 +639,7 @@ async function renderBlockDetails(blockNumber, minersCount, miners) {
                 </div>`)
 
     let minerUrl, winnerUrl
-    if (blockNumber > LAST_HYPERS_BLOCK) {
+    if (blockNumber > LAST_HYPERS_BLOCK || !cachedEvents[blockNumber]) {
         minerUrl = '#'
         winnerUrl = '#'
     } else {
