@@ -476,6 +476,34 @@ function insertNewBlock(blockElement, existingBlocks, blocksScroll) {
     const lastBlock = document.getElementById(`block-${LAST_HYPERS_BLOCK - 1}`)
     const winnerString = `<span class="mdi mdi-party-popper"></span> ${formatAddress(cachedWinners[LAST_HYPERS_BLOCK - 1])}`
     lastBlock.querySelector('.block-winner').innerHTML = winnerString
+    setTimeout(() => winnerConfetti(lastBlock), 1000)
+}
+
+function winnerConfetti(lastBlockElem) {
+    const lastBlockPopper = lastBlockElem.querySelector('.mdi-party-popper')
+    const position = calcElemPosition(lastBlockPopper)
+    confetti({
+        angle: 45,
+        spread: 35,
+        particleCount: 50,
+        scalar: 0.6,
+        origin: { x: position.x, y: position.y },
+        decay: 0.9,
+        startVelocity: 20,
+        ticks: 80,
+        disableForReducedMotion: true
+    });
+}
+
+// Return two numbers between 0-1 for the position of the element on the screen
+function calcElemPosition(elem) {
+    const position = elem.getBoundingClientRect()
+    const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
+    const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
+    return {
+        x: position.right / vw,
+        y: position.top / vh
+    }
 }
 
 function insertHistoricalBlock(blockElement, existingBlocks, blocksScroll) {
@@ -664,42 +692,38 @@ async function renderBlockDetails(blockNumber, minersCount, miners) {
     }
     const reward = calculateReward(blockNumber)
     return `
-        <p style="margin-bottom: 10px;">Block #${blockNumber > LAST_HYPERS_BLOCK ? 'pending' : blockNumber}</p>
-
-        <div class="miners-list">
-            <div class="miner-item">
-                <p class="bold">
-                    ${minersCount}
-                    <span class="mdi mdi-pickaxe"></span>
-                </p>
-                <small>Total miners</small>
+        <div class="block-head-list">
+            <div class="block-head-item">
+                <span class="mdi mdi-cube"></span>
+                Block #${blockNumber > LAST_HYPERS_BLOCK ? 'pending' : blockNumber}
             </div>
-            <div class="miner-item">
-                <p class="bold block-detail-block-time">
+            <div class="block-head-item" title="This block was mined in ${formatSeconds(blockTime)}">
+                <span class="mdi mdi-clock"></span>
+                Block time:
+                <span class="block-detail-block-time bold">
                     ${formatSeconds(blockTime)}
-                </p>
-                <small>Block time</small>
+                </span>
             </div>
-            <a href="${winnerUrl}" target="_blank">
-                <div class="miner-item">
-                    <p class="bold">
-                        <span class="mdi mdi-party-popper"></span>
-                        ${formatAddress(winner)}
-                    </p>
-                    <small>Winner of ${reward} HYPERS</small>
-                </div>
-            </a>
-            <a href="${minerUrl}" target="_blank">
-                <div class="miner-item">
-                    <p class="bold">
-                        <span class="mdi mdi-file-sign"></span>
-                        ${formatAddress(miner)}
-                    </p>
-                    <small>Block issuer</small>
-                </div>
-            </a>
+            <div class="block-head-item" title="${formatAddress(winner)} won ${reward} HYPERS block reward">
+                <span class="mdi mdi-party-popper"></span>
+                Winner: 
+                <a href="${winnerUrl}" title="${winner}" target="_blank" class="bold">
+                    ${formatAddress(winner)}
+                </a>
+            </div>
+            <div class="block-head-item" title="${formatAddress(miner)} finalized this block">
+                <span class="mdi mdi-file-sign"></span>
+                Block issuer:
+                <a href="${minerUrl}" title="${miner}" target="_blank" class="bold">
+                    ${formatAddress(miner)}
+                </a>
+            </div>
         </div>
-        <p style="margin-top: 20px; margin-bottom: 10px;">Miners:</p>
+        <p style="margin-top: 30px; margin-bottom: 15px; font-size: 20px;">
+            <span class="mdi mdi-pickaxe"></span>
+            <b>${minersCount}</b>
+            miners:
+        </p>
         <div class="miners-list">
             ${items.join('')}
         </div>

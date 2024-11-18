@@ -68,7 +68,7 @@ header {
 
 .metrics-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 15px;
     margin-bottom: 30px;
 }
@@ -280,11 +280,11 @@ button:hover {
 
 /* Animation for new blocks */
 .block.slide-in {
-    animation: slideIn 2s ease-out forwards;
+    animation: slideIn 1s ease-out forwards;
 }
 
 .block.fade-in {
-    animation: fadeIn 2s ease-out forwards;
+    animation: fadeIn 1s ease-out forwards;
 }
 
 @keyframes slideIn {
@@ -363,8 +363,30 @@ button:hover {
 
 .miners-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 20px;
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.block-head-list {
+    display: grid;
+    gap: 0px;
+    grid-template-columns: repeat(2, 1fr);
+}
+
+@media screen and (min-width: 768px) {
+    .miners-list, .metrics-container {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media screen and (min-width: 1220px) {
+    .block-head-list, .miners-list, .metrics-container {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.block-head-item {
+    font-size: 16px;
 }
 
 .miner-item {
