@@ -1,4 +1,4 @@
-const GAS_CONTRACT_ADDRESS = '0x4300000000000000000000000000000000000002'
+const GAS_HYPERS_ADDRESS = '0x4300000000000000000000000000000000000002'
 const MULTICALL_ADDRESS = '0xcA11bde05977b3631167028862bE2a173976CA11'
 const BATCH_MINERS_ADDRESS = '0x46b83472F2a3A51d5F5b222139b13Df6Bf942CC8'
 const INIT_MAX_SUPPLY = 21000000
@@ -8,23 +8,27 @@ const HALVING_INTERVAL = 42000
 const urlParams = new URLSearchParams(window.location.search)
 const VERSION = urlParams.get('v')
 
-let CONTRACT_ADDRESS, ABI, web3, contract, gasContract, multicallContract, batchMinersContract, ethPrice, updateInterval, ethPriceInterval, WINNER_OFFSET
+let HYPERS_ADDRESS, ABI, web3, contract, gasContract, multicallContract, batchMinersContract
+let ETH_PRICE, UPDATE_INTERVAL, ETH_PRICE_INTERVAL
+let WINNER_OFFSET
+let LAST_HYPERS_BLOCK = 0
+let LAST_HYPERS_BLOCK_TIME = 0
 
 if (VERSION === '1') {
-    CONTRACT_ADDRESS = '0x7E82481423B09c78e4fd65D9C1473a36E5aEd405'
+    HYPERS_ADDRESS = '0x7E82481423B09c78e4fd65D9C1473a36E5aEd405'
     ABI = '/contracts/abi/v1.json'
     WINNER_OFFSET = 0
 } else if (VERSION === '2') {
-    CONTRACT_ADDRESS = '0x22B309977027D4987C3463774D7046d5136CB14a'
+    HYPERS_ADDRESS = '0x22B309977027D4987C3463774D7046d5136CB14a'
     ABI = '/contracts/abi/v2.json'
     WINNER_OFFSET = 0
 } else { // v3
-    CONTRACT_ADDRESS = '0xF8797dB8a9EeD416Ca14e8dFaEde2BF4E1aabFC3'
+    HYPERS_ADDRESS = '0xF8797dB8a9EeD416Ca14e8dFaEde2BF4E1aabFC3'
     ABI = '/contracts/abi/v3.json'
     WINNER_OFFSET = 1
 }
 
-document.getElementById('contract-link').href = `https://blastscan.io/address/${CONTRACT_ADDRESS}`
+document.getElementById('contract-link').href = `https://blastscan.io/address/${HYPERS_ADDRESS}`
 
 // ABI Loading
 async function loadABIs() {
@@ -47,7 +51,7 @@ async function loadABIs() {
 }
 
 // Price Functions
-async function getEthPrice() {
+async function updateEthPrice() {
     try {
         // Try CoinGecko first
         const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd')
@@ -104,43 +108,43 @@ async function multicall(calls) {
 function buildContractCalls() {
     return [
         {
-            target: CONTRACT_ADDRESS,
+            target: HYPERS_ADDRESS,
             callData: contract.methods.blockNumber().encodeABI()
         },
         {
-            target: CONTRACT_ADDRESS,
+            target: HYPERS_ADDRESS,
             callData: contract.methods.totalSupply().encodeABI()
         },
         {
-            target: CONTRACT_ADDRESS,
+            target: HYPERS_ADDRESS,
             callData: contract.methods.miningReward().encodeABI()
         },
         {
-            target: CONTRACT_ADDRESS,
+            target: HYPERS_ADDRESS,
             callData: contract.methods.lastBlockTime().encodeABI()
         },
         {
-            target: CONTRACT_ADDRESS,
+            target: HYPERS_ADDRESS,
             callData: contract.methods.halvingInterval().encodeABI()
         },
         {
-            target: CONTRACT_ADDRESS,
+            target: HYPERS_ADDRESS,
             callData: contract.methods.lastHalvingBlock().encodeABI()
         },
         {
-            target: CONTRACT_ADDRESS,
+            target: HYPERS_ADDRESS,
             callData: contract.methods.tokenValue().encodeABI()
         },
         {
-            target: GAS_CONTRACT_ADDRESS,
-            callData: gasContract.methods.readGasParams(CONTRACT_ADDRESS).encodeABI()
+            target: GAS_HYPERS_ADDRESS,
+            callData: gasContract.methods.readGasParams(HYPERS_ADDRESS).encodeABI()
         },
         {
-            target: CONTRACT_ADDRESS,
+            target: HYPERS_ADDRESS,
             callData: contract.methods.minersPerBlockCount(LAST_HYPERS_BLOCK + 1).encodeABI()
         },
         {
-            target: CONTRACT_ADDRESS,
+            target: HYPERS_ADDRESS,
             callData: contract.methods.maxSupply().encodeABI()
         },
         {
@@ -149,7 +153,7 @@ function buildContractCalls() {
         },
         {
             target: MULTICALL_ADDRESS,
-            callData: multicallContract.methods.getEthBalance(CONTRACT_ADDRESS).encodeABI()
+            callData: multicallContract.methods.getEthBalance(HYPERS_ADDRESS).encodeABI()
         }
     ]
 }
@@ -185,11 +189,11 @@ function calculateValues(tokenValue, totalSupply, tvlEth) {
     
     // Calculate intrinsic value
     const intrinsicValueEth = parseFloat(web3.utils.fromWei(tokenValue, 'ether')).toFixed(10)
-    const intrinsicValueUsd = (parseFloat(intrinsicValueEth) * ethPrice).toFixed(6)
+    const intrinsicValueUsd = (parseFloat(intrinsicValueEth) * ETH_PRICE).toFixed(6)
     
     // Calculate theoretical value based on TVL
     const theoreticalValueEth = (parseFloat(tvlEth) / parseFloat(totalSupplyEth)).toFixed(10)
-    const theoreticalValueUsd = (parseFloat(theoreticalValueEth) * ethPrice).toFixed(6)
+    const theoreticalValueUsd = (parseFloat(theoreticalValueEth) * ETH_PRICE).toFixed(6)
     
     return { 
         intrinsicValueEth, 
@@ -198,9 +202,6 @@ function calculateValues(tokenValue, totalSupply, tvlEth) {
         theoreticalValueUsd
     }
 }
-
-let LAST_HYPERS_BLOCK = 0
-let LAST_HYPERS_BLOCK_TIME = 0
 // UI Updates
 function updateUI(values, tvlEth) {
     const {
@@ -223,7 +224,7 @@ function updateUI(values, tvlEth) {
     document.getElementById('theoreticalValue').textContent = theoreticalValueUsd
     document.getElementById('theoreticalValueEth').textContent = theoreticalValueEth
     document.getElementById('tvl').textContent = parseFloat(tvlEth).toFixed(2)
-    document.getElementById('tvlUsd').textContent = formatNumber(Math.round(parseFloat(tvlEth) * ethPrice))
+    document.getElementById('tvlUsd').textContent = formatNumber(Math.round(parseFloat(tvlEth) * ETH_PRICE))
     document.getElementById('maxSupply').textContent = formatNumber(maxSupply/1e18)
 
     // Update tokens metrics
@@ -247,7 +248,7 @@ function updateUI(values, tvlEth) {
     // Update gas price
     const gasPriceGwei = web3.utils.fromWei(values.gasPrice, 'gwei')
     document.getElementById('gasPrice').textContent = `${parseFloat(gasPriceGwei).toFixed(5)} Gwei`
-    document.getElementById('gasPriceUsd').textContent = `$${(parseFloat(gasPriceGwei) * ethPrice * 0.000000001 * 25000000).toFixed(3)}`
+    document.getElementById('gasPriceUsd').textContent = `$${(parseFloat(gasPriceGwei) * ETH_PRICE * 0.000000001 * 25000000).toFixed(3)}`
 }
 
 function formatTimeUntil(hours) {
@@ -340,7 +341,7 @@ async function getNewBlockEvent(blockNumber) {
     
     // Initialize these values if they're null
     if (earliestEthBlockFetched === null || latestEthBLockFetched === null) {
-        earliestEthBlockFetched = latestEthBLockFetched = await web3.eth.getBlockNumber()
+        earliestEthBlockFetched = latestEthBLockFetched = VERSION === '1' ? 7820907 : await web3.eth.getBlockNumber()
     }
     
     if (isNewBlock(blockNumber, existingBlocks)) {
@@ -351,9 +352,9 @@ async function getNewBlockEvent(blockNumber) {
         toBlock = earliestEthBlockFetched
     }
 
-    const newBlockTopic = '0x58ab9d8b9ae9ad7e2baee835f3d3fe920b93baf574a51df42c0390491f7297e9'
+    const newBlockTopic = VERSION === '1' ? '0x7fe090037171b6c8b269016189ef1438c336d360d819447a441fe06865776049' : '0x58ab9d8b9ae9ad7e2baee835f3d3fe920b93baf574a51df42c0390491f7297e9'
     const filter = {
-        address: CONTRACT_ADDRESS,
+        address: HYPERS_ADDRESS,
         topics: [newBlockTopic],
         fromBlock: fromBlock,
         toBlock: toBlock
@@ -367,14 +368,14 @@ async function getNewBlockEvent(blockNumber) {
         if (event.blockNumber < earliestEthBlockFetched) {
             earliestEthBlockFetched = event.blockNumber
         }
-
-        const decoded = web3.eth.abi.decodeLog([
-            { type: 'uint256', name: 'blockNumber', indexed: false },
-            { type: 'address', name: 'miner', indexed: false }
-        ], event.data, event.topics)
-
+        
+        const decoded = decodeNewBlockEvent(event)
         cachedEvents[decoded.blockNumber] = event
-        cachedWinners[decoded.blockNumber - WINNER_OFFSET] = decoded.miner
+        if (VERSION !== '1') {
+            cachedWinners[decoded.blockNumber - WINNER_OFFSET] = decoded.miner
+        } else {
+            cachedWinners[decoded.blockNumber] = 'unknown'
+        }
     }
     
     if (cachedEvents[blockNumber]) {
@@ -383,6 +384,21 @@ async function getNewBlockEvent(blockNumber) {
         console.log(`No event found for block ${blockNumber}`)
         return null
     }
+}
+
+function decodeNewBlockEvent(event) {
+    let decoded
+    if (VERSION === '1') {
+        decoded = web3.eth.abi.decodeLog([
+            { type: 'uint256', name: 'blockNumber', indexed: false }
+        ], event.data, event.topics)
+    } else {
+        decoded = web3.eth.abi.decodeLog([
+            { type: 'uint256', name: 'blockNumber', indexed: false },
+            { type: 'address', name: 'miner', indexed: false }
+        ], event.data, event.topics)
+    }
+    return decoded
 }
 
 
@@ -568,7 +584,7 @@ function createPendingBlockElement() {
 async function getBlockMiners(blockNumber) {
     try {
         const miners = {}
-        const minersArray = await batchMinersContract.methods.aggregateMiners(CONTRACT_ADDRESS, blockNumber).call()
+        const minersArray = await batchMinersContract.methods.aggregateMiners(HYPERS_ADDRESS, blockNumber).call()
 
         // format to an array like [ miner1: 10, miner2: 20 ]
         for (let i = 0; i < minersArray.length; i++) {
@@ -738,19 +754,15 @@ async function updateAllMetrics() {
 // Initialization
 async function init() {
     try {
-        if (updateInterval) clearInterval(updateInterval)
-        if (ethPriceInterval) clearInterval(ethPriceInterval)
+        if (UPDATE_INTERVAL) clearInterval(UPDATE_INTERVAL)
+        if (ETH_PRICE_INTERVAL) clearInterval(ETH_PRICE_INTERVAL)
 
         const { contractABI, gasABI, multicallABI, batchMinersABI } = await loadABIs()
-        ethPrice = await getEthPrice()
-        if (!ethPrice) {
-            console.error('Failed to get ETH price')
-            return
-        }
+        await updateEthPrice()
         
         web3 = new Web3('https://rpc.blast.io')
-        contract = new web3.eth.Contract(contractABI, CONTRACT_ADDRESS)
-        gasContract = new web3.eth.Contract(gasABI, GAS_CONTRACT_ADDRESS)
+        contract = new web3.eth.Contract(contractABI, HYPERS_ADDRESS)
+        gasContract = new web3.eth.Contract(gasABI, GAS_HYPERS_ADDRESS)
         multicallContract = new web3.eth.Contract(multicallABI, MULTICALL_ADDRESS)
         batchMinersContract = new web3.eth.Contract(batchMinersABI, BATCH_MINERS_ADDRESS)
         const pendingBlock = createPendingBlockElement()
@@ -758,10 +770,8 @@ async function init() {
         await updateAllMetrics()
 
         initializeInfiniteScroll()
-        updateInterval = setInterval(updateAllMetrics, 1000)
-        ethPriceInterval = setInterval(async () => {
-            ethPrice = await getEthPrice()
-        }, 60000)
+        UPDATE_INTERVAL = setInterval(updateAllMetrics, 1000)
+        ETH_PRICE_INTERVAL = setInterval(updateEthPrice, 60000)
         initializeExternalLinks()
         loadInitialBlocks(LAST_HYPERS_BLOCK - 1)
     } catch (error) {
