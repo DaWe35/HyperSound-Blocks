@@ -57,9 +57,10 @@ async function updateEthPrice() {
         const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd')
         const data = await response.json()
         if (data?.ethereum?.usd) {
-            return data.ethereum.usd
+            ETH_PRICE = data.ethereum.usd
+        } else {
+            throw new Error('Invalid CoinGecko response')
         }
-        throw new Error('Invalid CoinGecko response')
     } catch (error) {
         console.warn('CoinGecko API failed, falling back to CryptoCompare:', error)
         try {
@@ -67,12 +68,13 @@ async function updateEthPrice() {
             const response = await fetch('https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD')
             const data = await response.json()
             if (data?.USD) {
-                return data.USD
+                ETH_PRICE = data.USD
+            } else {
+                throw new Error('Invalid CryptoCompare response')
             }
-            throw new Error('Invalid CryptoCompare response')
         } catch (fallbackError) {
             console.error('Both price APIs failed:', fallbackError)
-            return null
+            ETH_PRICE = null
         }
     }
 }
@@ -184,6 +186,7 @@ async function calculateTVL(gasParams, ethBalance) {
 
 // Value Calculations
 function calculateValues(tokenValue, totalSupply, tvlEth) {
+
     // Convert totalSupply to ETH units
     const totalSupplyEth = web3.utils.fromWei(totalSupply, 'ether')
     
@@ -194,7 +197,7 @@ function calculateValues(tokenValue, totalSupply, tvlEth) {
     // Calculate theoretical value based on TVL
     const theoreticalValueEth = (parseFloat(tvlEth) / parseFloat(totalSupplyEth)).toFixed(10)
     const theoreticalValueUsd = (parseFloat(theoreticalValueEth) * ETH_PRICE).toFixed(6)
-    
+
     return { 
         intrinsicValueEth, 
         intrinsicValueUsd,
