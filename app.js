@@ -553,7 +553,7 @@ function formatAddress(address, useIconBlockie = false) {
         '0x8F8B4759dC93CA55bD6997DF719F20F581F10F5C': 'pondermint', // https://intel.arkm.com/explorer/address/0x8F8B4759dC93CA55bD6997DF719F20F581F10F5C
     }
     
-    return knownAddresses[address] || address.substring(38)
+    return knownAddresses[address] || address.substring(2, 6) + '...' + address.substring(38)
 }
 
 function createBlockElement(data) {
