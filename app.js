@@ -529,6 +529,7 @@ function formatAddress(address, useIconBlockie = false) {
         '0x8b3B7036A67aE1bCCB631Fa23fa69172f2592b19': 'v2 exploiter',
         '0x4aBf167D88Be803B944617343Acb0b267E0eC265': 'v2 exploiter',
         '0x11879103A01619fb9f982C75B1d5056520B57846': 'v2 exploiter',
+        '0x5F6fD9d880BE6e209d5ee7a5517DfB40B8a9d81B': 'v2 exploiter', // https://intel.arkm.com/explorer/address/0x5F6fD9d880BE6e209d5ee7a5517DfB40B8a9d81B
         '0x7F448F0435803744Bcda76afED4F17B0A6E0FB23': 'Big BadWolf',
         '0x311111036921FfA417d03Ab1a9Aaff09429f3D98': 'Teim',
         '0x379b1a0cD7330fC5e21a68cce1CdbD0A3E5C1Fc0': 'Julien',
@@ -540,7 +541,16 @@ function formatAddress(address, useIconBlockie = false) {
         '0xfde46ab2eBdc35d5fFA9b7bA41b5079f6103335F': 'Rufina',
         '0x07Db56c360E83C5035833A1Bd4B5841F21720575': 'Rufina',
         '0xc7937623E07FE88A442Ec4949664C51CaD8541fa': 'Rufina',
-
+        '0xa97902225044B8FB61E95e62dC02263904F7538B': '0xYupa', // https://x.com/0xYupa/status/1824225965977055497
+        '0x5792169336BB6c47Fe2dcff091751Ae90255090d': '0xYupa',
+        '0x7d2e1E1aEaE6d9F91a75C9fb7e1B22E7135C0DeF': '0xYupa',
+        '0x194b3496E9d2FfAe6AF332350d33Af8B21cA9b5d': 'Shoplifter', // https://intel.arkm.com/explorer/address/0x194b3496E9d2FfAe6AF332350d33Af8B21cA9b5d
+        '0xaf88d946ef18b54ed35558ba5d03f737e40fcd39': 'etherlect', // https://blastr.xyz/user/0xAF88D946Ef18B54Ed35558BA5D03F737E40FCD39
+        '0x1b123ec75EEB3636Ce6317ed7646f7dAB3fC2199': 'etherlect',
+        '0xD51Ce9bE4a1cb6185B76Ba825C59236a6Cf5ca2A': 'mrk_eth', // https://intel.arkm.com/explorer/entity/mrk-eth
+        '0xD55c42A4bEA00E19B02378EBA330d487dC44DE37': 'SkulzNFT', // https://intel.arkm.com/explorer/address/0xD55c42A4bEA00E19B02378EBA330d487dC44DE37
+        '0xbd0B494819265E1ec610B33227861070b534c294': 'FrostyOogaboo', // https://intel.arkm.com/explorer/address/0xbd0B494819265E1ec610B33227861070b534c294
+        '0x8F8B4759dC93CA55bD6997DF719F20F581F10F5C': 'pondermint', // https://intel.arkm.com/explorer/address/0x8F8B4759dC93CA55bD6997DF719F20F581F10F5C
     }
     
     return knownAddresses[address] || address.substring(38)
