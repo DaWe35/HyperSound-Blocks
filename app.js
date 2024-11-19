@@ -535,12 +535,11 @@ function formatAddress(address, useIconBlockie = false) {
         '0xD8e1cB737Bd1608ec9Ee19E8D00F2d9e020fA6D3': 'Julien',
         '0x526228544F39C0CBB5eC522682D0359d585E136D': 'Gra-Gra',
         '0x19c1c04CA24D38157FC85614ba765C7f6f844C95': 'Im so f sorry',
-        '0x4a5073642E143a9Ef35af6DED4d45bB711A27096': 'Anon60', // Machi fan?
-        '0x72aeF46A2b46fd078530A1A61E18BF68ff78EB0C': 'Anon60',
-        '0xfde46ab2eBdc35d5fFA9b7bA41b5079f6103335F': 'Anon60',
-        '0x07Db56c360E83C5035833A1Bd4B5841F21720575': 'Anon60',
-        '0x1Fb1cC0E4bD13C0cb4fED7Ed4a302C11FA57fE4C': 'Anon60',
-        '0xc7937623E07FE88A442Ec4949664C51CaD8541fa': 'Anon60',
+        '0x72aeF46A2b46fd078530A1A61E18BF68ff78EB0C': 'Rufina', // https://blastr.xyz/user/0x72aef46a2b46fd078530a1a61e18bf68ff78eb0c
+        '0x4a5073642E143a9Ef35af6DED4d45bB711A27096': 'Rufina',
+        '0xfde46ab2eBdc35d5fFA9b7bA41b5079f6103335F': 'Rufina',
+        '0x07Db56c360E83C5035833A1Bd4B5841F21720575': 'Rufina',
+        '0xc7937623E07FE88A442Ec4949664C51CaD8541fa': 'Rufina',
 
     }
     

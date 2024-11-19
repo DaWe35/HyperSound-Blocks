@@ -338,10 +338,10 @@ button:hover {
 }
 
 .block-miner {
+    width: 100%;
     position: absolute;
     bottom: -25px;
-    left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(-20px);
     color: var(--text-secondary);
     font-size: 12px;
     word-break: break-all;
