@@ -521,19 +521,27 @@ function formatAddress(address, useIconBlockie = false) {
     
     const knownAddresses = {
         '0xb82619C0336985e3EDe16B97b950E674018925Bb': 'KONKPool',
-        '0xdB14eEd121138c4C44F2Bd2441980CeC80539Df9': 'KONKMiner',
+        '0xdB14eEd121138c4C44F2Bd2441980CeC80539Df9': 'KONKPool',
         '0x2099A5d5DA9db8a91a21b7a1Cf7f969a5D078C15': 'Machi',
         '0x6B8c262CA939adbe3793D3eca519a9D64f74D184': 'Machi',
+        '0x020cA66C30beC2c4Fe3861a94E4DB4A498A35872': 'Machi',
         '0xa0df6ADAa4f7e880b4B3C40147C6ae92124d88a8': 'v2 exploiter',
-        '0x8b3B7036A67aE1bCCB631Fa23fa69172f2592b19': 'v2 exploiter miner',
-        '0x4aBf167D88Be803B944617343Acb0b267E0eC265': 'v2 exploiter 1',
-        '0x11879103A01619fb9f982C75B1d5056520B57846': 'v2 exploiter 2',
+        '0x8b3B7036A67aE1bCCB631Fa23fa69172f2592b19': 'v2 exploiter',
+        '0x4aBf167D88Be803B944617343Acb0b267E0eC265': 'v2 exploiter',
+        '0x11879103A01619fb9f982C75B1d5056520B57846': 'v2 exploiter',
         '0x7F448F0435803744Bcda76afED4F17B0A6E0FB23': 'Big BadWolf',
         '0x311111036921FfA417d03Ab1a9Aaff09429f3D98': 'Teim',
         '0x379b1a0cD7330fC5e21a68cce1CdbD0A3E5C1Fc0': 'Julien',
-        '0xD8e1cB737Bd1608ec9Ee19E8D00F2d9e020fA6D3': 'Julien 2',
+        '0xD8e1cB737Bd1608ec9Ee19E8D00F2d9e020fA6D3': 'Julien',
         '0x526228544F39C0CBB5eC522682D0359d585E136D': 'Gra-Gra',
         '0x19c1c04CA24D38157FC85614ba765C7f6f844C95': 'Im so f sorry',
+        '0x4a5073642E143a9Ef35af6DED4d45bB711A27096': 'ID#60',
+        '0x72aeF46A2b46fd078530A1A61E18BF68ff78EB0C': 'ID#60',
+        '0xfde46ab2eBdc35d5fFA9b7bA41b5079f6103335F': 'ID#60',
+        '0x07Db56c360E83C5035833A1Bd4B5841F21720575': 'ID#60',
+        '0x1Fb1cC0E4bD13C0cb4fED7Ed4a302C11FA57fE4C': 'ID#60',
+        '0xc7937623E07FE88A442Ec4949664C51CaD8541fa': 'ID#60',
+
     }
     
     return knownAddresses[address] || address.substring(38)
