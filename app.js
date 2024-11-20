@@ -310,8 +310,9 @@ async function loadBlock(blockNumber) {
 }
 
 async function fetchBlockData(blockNumber) {
-    const [minersCount, blockTime] = await Promise.all([
+    const [minersCount, blockTime, blockTimeDiff] = await Promise.all([
         contract.methods.minersPerBlockCount(blockNumber).call(),
+        getBlockTime(blockNumber),
         getBlockTimeDiff(blockNumber)
     ])
 
@@ -323,7 +324,8 @@ async function fetchBlockData(blockNumber) {
         winner,
         reward: calculateReward(blockNumber),
         miner,
-        blockTime
+        blockTime,
+        blockTimeDiff
     }
 }
 
@@ -564,6 +566,25 @@ function formatAddress(address, useIconBlockie = false) {
     return knownAddresses[address] || address.substring(2, 6) + '...' + address.substring(38)
 }
 
+// Add this helper function for relative time formatting
+function formatTimeAgo(timestamp) {
+    const seconds = Math.floor((Date.now() / 1000) - timestamp);
+    
+    if (seconds < 60) {
+        return `${seconds} seconds ago`;
+    } else if (seconds < 3600) {
+        const minutes = Math.floor(seconds / 60);
+        return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`;
+    } else if (seconds < 86400) {
+        const hours = Math.floor(seconds / 3600);
+        return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
+    } else {
+        const days = Math.floor(seconds / 86400);
+        return `${days} ${days === 1 ? 'day' : 'days'} ago`;
+    }
+}
+
+// Modify createBlockElement to use blockTime instead of blockTimeDiff
 function createBlockElement(data) {
     const block = document.createElement('div')
     
@@ -585,8 +606,10 @@ function createBlockElement(data) {
         <div class="block-winner" title="Block reward winner">
             ${createBlockie(data.winner)} ${winnerAddress}
         </div>
-        <div class="block-reward">
-            ${formatSeconds(data.blockTime)}
+        <div class="block-reward" title="Block time: ${formatSeconds(data.blockTimeDiff)}">
+            <span class="time-ago" data-timestamp="${data.blockTime}">
+                ${formatTimeAgo(data.blockTime)}
+            </span>
         </div>
         <div class="block-miner" title="Block issuer">
             ${createBlockie(data.miner)} ${formatAddress(data.miner)}
@@ -672,9 +695,12 @@ async function updateBlockMiners(blockNumber, minersCount) {
     }
 }
 
+// Modify renderBlockDetails to show relative time
 async function renderBlockDetails(blockNumber, minersCount, miners) {
     const { winner, miner } = await getBlockMinerWinner(blockNumber)
-    const blockTime = await getBlockTimeDiff(blockNumber)
+    const blockTimeDiff = await getBlockTimeDiff(blockNumber)
+    const blockTime = await getBlockTime(blockNumber)
+    const isPending = blockNumber > LAST_HYPERS_BLOCK
 
     const isLoading = miners === null
     const items = isLoading 
@@ -698,7 +724,7 @@ async function renderBlockDetails(blockNumber, minersCount, miners) {
                 </div>`)
 
     let minerUrl, winnerUrl
-    if (blockNumber > LAST_HYPERS_BLOCK || !cachedEvents[blockNumber]) {
+    if (isPending || !cachedEvents[blockNumber]) {
         minerUrl = '#'
         winnerUrl = '#'
     } else {
@@ -710,13 +736,13 @@ async function renderBlockDetails(blockNumber, minersCount, miners) {
         <div class="block-head-list">
             <div class="block-head-item">
                 <span class="mdi mdi-cube"></span>
-                Block #${blockNumber > LAST_HYPERS_BLOCK ? 'pending' : blockNumber}
+                Block #${isPending ? 'pending' : blockNumber}
             </div>
-            <div class="block-head-item" title="This block was mined in ${formatSeconds(blockTime)}">
+            <div class="block-head-item" title="Block time: ${formatSeconds(blockTimeDiff)}">
                 <span class="mdi mdi-clock"></span>
-                Block time:
-                <span class="block-detail-block-time bold">
-                    ${formatSeconds(blockTime)}
+                Mined:
+                <span class="bold ${isPending ? 'block-detail-block-time' : 'time-ago'}" data-timestamp="${blockTime}">
+                    ${isPending ? formatSeconds(blockTimeDiff) : formatTimeAgo(blockTime)}
                 </span>
             </div>
             <div class="block-head-item" title="${formatAddress(winner)} won ${reward} HYPERS block reward">
@@ -777,8 +803,13 @@ async function updateAllMetrics() {
                 blockTimeElem.textContent = formatSeconds(LAST_HYPERS_BLOCK_TIME)
             }
             if (CURRENT_MINERS !== parseInt(decoded.minersCount)) {
-                CURRENT_MINERS = parseInt(decoded.minersCount)
-                await updateBlockMiners(LAST_HYPERS_BLOCK + 1, CURRENT_MINERS)
+                CURRENT_MINERS = parseInt(decoded.minersCount) // if new block mined
+                if (LAST_HYPERS_BLOCK_TIME > 1) {
+                    await updateBlockMiners(LAST_HYPERS_BLOCK + 1, CURRENT_MINERS)
+                } else {
+                    await sleep(4000)
+                    await updateBlockMiners(LAST_HYPERS_BLOCK + 1, CURRENT_MINERS)
+                }
             }
         }
     } catch (error) {
@@ -788,6 +819,16 @@ async function updateAllMetrics() {
                         'intrinsicValueEth', 'theoreticalValueEth', 'tvl', 'gasPrice']
         metrics.forEach(id => document.getElementById(id).textContent = '...')
     }
+}
+
+// Add a function to update all relative timestamps
+function updateRelativeTimes() {
+    document.querySelectorAll('.time-ago').forEach(element => {
+        const timestamp = element.dataset.timestamp
+        if (timestamp) {
+            element.textContent = formatTimeAgo(timestamp)
+        }
+    })
 }
 
 // Initialization
@@ -809,7 +850,10 @@ async function init() {
         await updateAllMetrics()
 
         initializeInfiniteScroll()
-        UPDATE_INTERVAL = setInterval(updateAllMetrics, 1000)
+        UPDATE_INTERVAL = setInterval(() => {
+            updateAllMetrics()
+            updateRelativeTimes()
+        }, 1000)
         ETH_PRICE_INTERVAL = setInterval(updateEthPrice, 60000)
         initializeExternalLinks()
         loadInitialBlocks(LAST_HYPERS_BLOCK - 1)
