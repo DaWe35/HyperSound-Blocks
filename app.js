@@ -312,7 +312,7 @@ async function loadBlock(blockNumber) {
 async function fetchBlockData(blockNumber) {
     const [minersCount, blockTime] = await Promise.all([
         contract.methods.minersPerBlockCount(blockNumber).call(),
-        getBlockTime(blockNumber)
+        getBlockTimeDiff(blockNumber)
     ])
 
     const { winner, miner } = await getBlockMinerWinner(blockNumber)
@@ -430,12 +430,20 @@ async function getBlockMinerWinner(blockNumber) {
 
 async function getBlockTime(blockNumber) {
     await fetchBlockExtra(blockNumber)
-    await fetchBlockExtra(blockNumber - 1)
-    if (cachedBlockTimes[blockNumber] && cachedBlockTimes[blockNumber - 1]) {
-        return cachedBlockTimes[blockNumber] - cachedBlockTimes[blockNumber - 1]
+    if (cachedBlockTimes[blockNumber]) {
+        return cachedBlockTimes[blockNumber]
     }
+    return null
+}
+
+async function getBlockTimeDiff(blockNumber) {
     if (blockNumber === LAST_HYPERS_BLOCK + 1) {
         return LAST_HYPERS_BLOCK_TIME
+    }
+    const time1 = await getBlockTime(blockNumber)
+    const time2 = await getBlockTime(blockNumber - 1)
+    if (time1 && time2) {
+        return time1 - time2
     }
     return null
 }
@@ -666,7 +674,7 @@ async function updateBlockMiners(blockNumber, minersCount) {
 
 async function renderBlockDetails(blockNumber, minersCount, miners) {
     const { winner, miner } = await getBlockMinerWinner(blockNumber)
-    const blockTime = await getBlockTime(blockNumber)
+    const blockTime = await getBlockTimeDiff(blockNumber)
 
     const isLoading = miners === null
     const items = isLoading 
