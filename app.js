@@ -529,6 +529,9 @@ function formatAddress(address, useIconBlockie = false) {
     if (address === 'pending') return 'Pending...'
     if (address === 'unknown' || typeof address === 'undefined') return 'Unknown'
     
+    // We respect the privacy of our users, so please only add addresses that have been PUBLICLY associated with it's owner.
+    // Please don't forget to add proof urls in comment.
+    // It is ok to add anon names, if you want to associate addresses with one unknown identity.
     const knownAddresses = {
         '0xb82619C0336985e3EDe16B97b950E674018925Bb': 'KONKPool',
         '0xdB14eEd121138c4C44F2Bd2441980CeC80539Df9': 'KONKPool',
@@ -541,7 +544,9 @@ function formatAddress(address, useIconBlockie = false) {
         '0x11879103A01619fb9f982C75B1d5056520B57846': 'v2 exploiter',
         '0x5F6fD9d880BE6e209d5ee7a5517DfB40B8a9d81B': 'v2 exploiter', // https://intel.arkm.com/explorer/address/0x5F6fD9d880BE6e209d5ee7a5517DfB40B8a9d81B
         '0x7F448F0435803744Bcda76afED4F17B0A6E0FB23': 'Big BadWolf',
-        '0x311111036921FfA417d03Ab1a9Aaff09429f3D98': 'Teim',
+        '0x6F679511ae1D42BD4de72F4270024ECC0B5fB5c5': 'Teim', // https://t.me/hypersblast/5897
+        '0x02F89C184045A85730302f9673d59d108B03207F': 'HypersHash', // https://t.me/hypersblast/5897
+        '0x311111036921FfA417d03Ab1a9Aaff09429f3D98': 'HypersHash', // https://t.me/hypersblast/5897
         '0x379b1a0cD7330fC5e21a68cce1CdbD0A3E5C1Fc0': 'Julien',
         '0xD8e1cB737Bd1608ec9Ee19E8D00F2d9e020fA6D3': 'Julien',
         '0x526228544F39C0CBB5eC522682D0359d585E136D': 'Gra-Gra',
@@ -555,12 +560,53 @@ function formatAddress(address, useIconBlockie = false) {
         '0x5792169336BB6c47Fe2dcff091751Ae90255090d': '0xYupa',
         '0x7d2e1E1aEaE6d9F91a75C9fb7e1B22E7135C0DeF': '0xYupa',
         '0x194b3496E9d2FfAe6AF332350d33Af8B21cA9b5d': 'Shoplifter', // https://intel.arkm.com/explorer/address/0x194b3496E9d2FfAe6AF332350d33Af8B21cA9b5d
-        '0xaf88d946ef18b54ed35558ba5d03f737e40fcd39': 'etherlect', // https://blastr.xyz/user/0xAF88D946Ef18B54Ed35558BA5D03F737E40FCD39
+        '0xaf88d946ef18b54ed35558ba5d03f737e40fcd39': 'etherlect', // https://x.com/etherlect https://blastr.xyz/user/0xAF88D946Ef18B54Ed35558BA5D03F737E40FCD39
         '0x1b123ec75EEB3636Ce6317ed7646f7dAB3fC2199': 'etherlect',
         '0xD51Ce9bE4a1cb6185B76Ba825C59236a6Cf5ca2A': 'mrk_eth', // https://intel.arkm.com/explorer/entity/mrk-eth
         '0xD55c42A4bEA00E19B02378EBA330d487dC44DE37': 'SkulzNFT', // https://intel.arkm.com/explorer/address/0xD55c42A4bEA00E19B02378EBA330d487dC44DE37
         '0xbd0B494819265E1ec610B33227861070b534c294': 'FrostyOogaboo', // https://intel.arkm.com/explorer/address/0xbd0B494819265E1ec610B33227861070b534c294
         '0x8F8B4759dC93CA55bD6997DF719F20F581F10F5C': 'pondermint', // https://intel.arkm.com/explorer/address/0x8F8B4759dC93CA55bD6997DF719F20F581F10F5C
+        '0x62951c8fE1B7bA6E9a873F137C99776d8861e799': 'Blastoshi',
+        '0x76515acb5b7f4cfa9b9ccd85b64677beced3c4d7': 'CrazySmuk', // https://x.com/CrazySmuk55883 https://blastr.xyz/user/0x76515aCB5B7F4cFA9B9ccd85B64677BeCEd3c4d7/
+        '0x1c07587323d3bbb0e314808fe3bf0093BCa7472F': 'CrazySmuk',
+        '0x3c17E77Ae9c4Be9bAfe46B1089D06be8f6286fB7': 'Craugau', // https://x.com/craugaut https://blastr.xyz/user/0x78aacb90f186bf118bfc0d8c64896f970221c5d3/
+        '0x78AACB90f186bF118BfC0D8C64896f970221C5D3': 'Craugau',
+        '0x70a9c497536e98f2dbb7c66911700fe2b2550900': 'Zeetientien', // https://blastr.xyz/user/0x70a9c497536E98F2DbB7C66911700fe2b2550900/
+        '0x4E3a2e325682154246BCF01A04Aa01364A7801a7': 'Zeetientien',
+        '0xdd1ECAe49312F5a2FeF65d13327E92D32864fDEe': 'mx170933937', // https://intel.arkm.com/explorer/address/0xdd1ECAe49312F5a2FeF65d13327E92D32864fDEe
+        '0xc45cD062A4056a5cb40aC1Bec8DFc700455Dd6C0': 'mx170933937',
+        '0x4FBBbdB89D37bFDC8c9AAfe1B7446A0B472C9Dd1': 'Blastr?',
+        '0xAD7a813741D66e13F4FaA72B52C1d955EC36e197': 'Blastr?', // https://blastscan.io/address/0xebe3c0e7b01ed23dc33f2a5c26ddbf1b36e9e534
+        '0xbC725EfdBE809AEd7f3171D95AD181E82a4eDc6D': 'Blastr?',
+        '0x4501a47bB9cb3368893F56E941eCC7f5eedeA6e1': 'Blastr?',
+        '0x1e6f1DA02C11008eC9669A9C297d1C85F6f76075': 'Snoopcat Blastr', // https://x.com/ceston350 https://blastr.xyz/user/0x1e6f1DA02C11008eC9669A9C297d1C85F6f76075/
+        '0x9Ec10f1Ec4ab4A8835685FEd7aBA9A5B8709323d': 'Snoopcat Blastr',
+        '0x287bdf8c332d44bb015f8b4deb6513010c951f39': 'beast_ico', // https://x.com/beast_ico https://blastr.xyz/user/0x287bDF8c332D44Bb015F8b4dEb6513010c951f39/
+        '0x575412f9217C5737563307A2dA96ABef240F17AE': 'beast_ico',
+        '0xa699b06F608A129fFE31B640Aaa1E239337D271a': 'ridamalt.eth',
+        '0xB2D2ECC7d94CFb8e70F60AeB97Bf7F4C4cB8eF28': 'Untamed Adam', // https://x.com/adamagb https://blastr.xyz/user/0xB2D2ECC7d94CFb8e70F60AeB97Bf7F4C4cB8eF28/
+        '0xeca4BA41913ca2867180c37d80991f916346B68d': 'Untamed Adam', // https://x.com/thewolvesxyz/status/1831745334436876552 https://blastscan.io/tx/0xb8cd6c35b8aed68b24fd8f89edec2142abecfa59e0784b1c2a863c7bc7e8bb1f
+        '0x732B486150DB62114b54489bef5520B1ea948877': 'ChaoticRage', // https://x.com/ChaoticRage5 https://blastr.xyz/user/0x732B486150DB62114b54489bef5520B1ea948877/
+        '0xF37e7812A5Fbf4830b6Ff0737A84f49FfEC5a9EC': 'ChinWaggle Blastr', // https://blastr.xyz/user/0xF37e7812A5Fbf4830b6Ff0737A84f49FfEC5a9EC/
+        '0xd674731D13df4133d82333b7017a44866a4C3044': 'ChinWaggle Blastr',
+        '0x24f1786f78ddadccf8707b57c2f5fd3528ad4a85': '40767 Blastr', // https://x.com/Grand4076 https://blastr.xyz/user/0x24f1786f78dDaDCcf8707B57c2F5fd3528AD4a85/
+        '0x411Ec02145090dCdc009d502b7afc7C33aEe545D': '40767 Blastr',
+        '0x9475FFF502a9D64c2ad7C61C8f92165CABaD5954': 'VitoRamirez', // https://blastr.xyz/user/0x9475FFF502a9D64c2ad7C61C8f92165CABaD5954/
+        '0x5e6238e1b7a367c456fe1c83ea21323095ff7e68': 'Curd1x Blastr', // https://x.com/Curd1x https://blastr.xyz/user/0x5E6238E1B7A367c456fe1C83ea21323095FF7E68/
+        '0x68A8B607684588880edd5214332dE90f2c42129A': 'Curd1x Blastr',
+        '0xd7e832c9a5e289b1d9cabcd2aac38018f16b7a7f': 'GarrettLorman', // https://x.com/GarrettLorman https://blastr.xyz/user/0xd7E832c9a5E289B1d9cabCD2AAc38018f16b7A7f/
+        '0x3E8EE7f508465840236e468354B28C62C7eEda57': 'GarrettLorman',
+        '0x474379421e2478c062521f4ee1afa27508e2f185': 'Girl', // https://x.com/MySunEyedG1rl https://blastr.xyz/user/0x474379421e2478c062521f4EE1AFA27508e2F185/
+        '0xBDacc7e4eC4F4BE294089d08b31C0f6eE6a36189': 'Sybil main',
+        '0x8e17cf9E9e006bdD486Ad96de17Aa2a5a1767338': 'Sybil 1',
+        '0x469117a6E560E54A9A35809E1370E48AfBeDFD3b': 'Sybil 2',
+        '0x49271DCB201F1B65E9a4DE08a4072f9E0d16d983': 'Sybil 3',
+        '0xd2686eBe28bfC1618a46eC52e93bF4A91d76647B': 'Sybil 4',
+        '0x7A19b70168A69DA6eA30C932dB8BDd00ae53B501': 'Sybil 5',
+        '0x4cBA4A968131e6f16581bAB8E39adD7953f1CD2b': 'Sybil 6',
+        '0x0433abA3ceC621419AC1C54A20FE1bD71bFf3241': 'Sybil 7',
+        '0x2CFD2546E9b32E8b7710Ba7bBC869352E9455e08': 'Sybil 8',
+        '0x14d1c780216eaB7eDEcC3733890Dab238B7B2AbF': 'Sybil 9',
     }
     
     return knownAddresses[address] || address.substring(2, 6) + '...' + address.substring(38)
