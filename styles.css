@@ -350,6 +350,7 @@ button:hover {
     background: rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     margin-bottom: 20px;
+    position: relative;
 }
 
 .block-details.active {
@@ -513,4 +514,14 @@ button:hover {
 .blockie-img {
     vertical-align: middle;
     border-radius: 50%;
+}
+
+.progress-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    width: var(--fill-percentage);
+    transition: width 1s linear;
 }

@@ -779,6 +779,7 @@ async function renderBlockDetails(blockNumber, minersCount, miners) {
     }
     const reward = calculateReward(blockNumber)
     return `
+        ${isPending ? '<div class="progress-line"></div>' : ''}
         <div class="block-head-list">
             <div class="block-head-item">
                 <span class="mdi mdi-cube"></span>
@@ -1024,12 +1025,11 @@ function debounce(func, wait) {
 }
 
 function updatePendingBlockProgress(secondsAgo) {
-    const pendingBlock = document.getElementById('pendingBlock')
-    if (!pendingBlock) return
-    
     // Calculate fill percentage (100% at 0s, 0% at 60s)
     const fillPercentage = Math.min(100, (secondsAgo / 60) * 100)
-    pendingBlock.style.setProperty('--fill-percentage', `${fillPercentage}%`)
+    
+    // Set the fill percentage globally on :root
+    document.documentElement.style.setProperty('--fill-percentage', `${fillPercentage}%`)
 }
 
 // Initialize
