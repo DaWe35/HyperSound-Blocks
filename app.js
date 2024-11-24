@@ -603,6 +603,8 @@ function formatAddress(address, useIconBlockie = false) {
         '0xC6223561a142635E8f954d183288abc10dA0a2c3': 'Girl',
         '0xeddd2AaFDF287bA4F81f750bEf2cF5821eD0A9DE': 'Girl',
         '0x2f5F5894CBfbAfD4cbd440De418bF864AA703eD0': 'Girl',
+        '0x111e318936660AAf49D485C74a77FFccb997D030': 'juri23.eth',
+        '0x5126a27683b410822151C70e4BE59a661279c407': 'juri23.eth',
         '0xBDacc7e4eC4F4BE294089d08b31C0f6eE6a36189': 'Sybil main',
         '0x8e17cf9E9e006bdD486Ad96de17Aa2a5a1767338': 'Sybil 1',
         '0x469117a6E560E54A9A35809E1370E48AfBeDFD3b': 'Sybil 2',
