@@ -605,6 +605,8 @@ function formatAddress(address, useIconBlockie = false) {
         '0x2f5F5894CBfbAfD4cbd440De418bF864AA703eD0': 'Girl',
         '0x111e318936660AAf49D485C74a77FFccb997D030': 'juri23.eth',
         '0x5126a27683b410822151C70e4BE59a661279c407': 'juri23.eth',
+        '0xd3d4a8fe484ea3682206a49e1405d85aeb1e9a48': 'Carrie Blastr', // https://blastr.xyz/user/0xD3D4A8fe484EA3682206A49e1405d85AEb1e9a48
+        '0x30F0Aa379A8c529EE4a1e246F780b7C40cfE93e7': 'Carrie Blastr',
         '0xBDacc7e4eC4F4BE294089d08b31C0f6eE6a36189': 'Sybil main',
         '0x8e17cf9E9e006bdD486Ad96de17Aa2a5a1767338': 'Sybil 1',
         '0x469117a6E560E54A9A35809E1370E48AfBeDFD3b': 'Sybil 2',
