@@ -623,11 +623,13 @@ function formatAddress(address, useIconBlockie = false) {
 }
 
 // Add this helper function for relative time formatting
-function formatTimeAgo(timestamp) {
+function formatTimeAgo(timestamp, showSeconds = true) {
     const seconds = Math.floor((Date.now() / 1000) - timestamp);
     
-    if (seconds < 60) {
+    if (seconds < 60 && showSeconds) {
         return `${seconds} seconds ago`;
+    } else if (seconds < 60) {
+        return 'just now';
     } else if (seconds < 3600) {
         const minutes = Math.floor(seconds / 60);
         return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`;
@@ -640,7 +642,6 @@ function formatTimeAgo(timestamp) {
     }
 }
 
-// Modify createBlockElement to use blockTime instead of blockTimeDiff
 function createBlockElement(data) {
     const block = document.createElement('div')
     
@@ -664,7 +665,7 @@ function createBlockElement(data) {
         </div>
         <div class="block-reward" title="Block time: ${formatSeconds(data.blockTimeDiff)}">
             <span class="time-ago" data-timestamp="${data.blockTime}">
-                ${formatTimeAgo(data.blockTime)}
+                ${formatTimeAgo(data.blockTime, false)}
             </span>
         </div>
         <div class="block-miner" title="Block issuer">
@@ -883,7 +884,10 @@ function updateRelativeTimes() {
     document.querySelectorAll('.time-ago').forEach(element => {
         const timestamp = element.dataset.timestamp
         if (timestamp) {
-            element.textContent = formatTimeAgo(timestamp)
+            // Check if this element is inside the latest block
+            const isLatestBlock = element.closest('.block')?.id === `block-${LAST_HYPERS_BLOCK}`
+            // Show seconds only for the latest block
+            element.textContent = formatTimeAgo(timestamp, !isLatestBlock)
         }
     })
 }
