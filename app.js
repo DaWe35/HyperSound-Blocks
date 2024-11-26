@@ -28,7 +28,7 @@ if (VERSION === '1') {
     WINNER_OFFSET = 1
 }
 
-document.getElementById('contract-link').href = `https://blastscan.io/address/${HYPERS_ADDRESS}`
+elem('#contract-link').href = `https://blastscan.io/address/${HYPERS_ADDRESS}`
 
 // ABI Loading
 async function loadABIs() {
@@ -216,40 +216,40 @@ function updateUI(values, tvlEth) {
 
     // Update metrics
     LAST_HYPERS_BLOCK = blockNumber
-    document.getElementById('totalSupply').textContent = formatNumber(Math.round(totalSupply/1e18))
-    document.getElementById('minerReward').textContent = minerReward/1e18
-    document.getElementById('minerRewardUsd').textContent = (minerReward/1e18 * intrinsicValueUsd).toFixed(3)
-    document.getElementById('minersCount').textContent = LAST_HYPERS_BLOCK == 0 ? '...' : minersCount
+    elem('#totalSupply').textContent = formatNumber(Math.round(totalSupply/1e18))
+    elem('#minerReward').textContent = minerReward/1e18
+    elem('#minerRewardUsd').textContent = (minerReward/1e18 * intrinsicValueUsd).toFixed(3)
+    elem('#minersCount').textContent = LAST_HYPERS_BLOCK == 0 ? '...' : minersCount
     
     // Update values
-    document.getElementById('intrinsicValue').textContent = intrinsicValueUsd
-    document.getElementById('intrinsicValueEth').textContent = intrinsicValueEth
-    document.getElementById('theoreticalValue').textContent = theoreticalValueUsd
-    document.getElementById('theoreticalValueEth').textContent = theoreticalValueEth
-    document.getElementById('tvl').textContent = parseFloat(tvlEth).toFixed(2)
-    document.getElementById('tvlUsd').textContent = formatNumber(Math.round(parseFloat(tvlEth) * ETH_PRICE))
-    document.getElementById('maxSupply').textContent = formatNumber(maxSupply/1e18)
+    elem('#intrinsicValue').textContent = intrinsicValueUsd
+    elem('#intrinsicValueEth').textContent = intrinsicValueEth
+    elem('#theoreticalValue').textContent = theoreticalValueUsd
+    elem('#theoreticalValueEth').textContent = theoreticalValueEth
+    elem('#tvl').textContent = parseFloat(tvlEth).toFixed(2)
+    elem('#tvlUsd').textContent = formatNumber(Math.round(parseFloat(tvlEth) * ETH_PRICE))
+    elem('#maxSupply').textContent = formatNumber(maxSupply/1e18)
 
     // Update tokens metrics
     const burned = calculateBurnedTokens(maxSupply/1e18)
-    document.getElementById('burnedPercentage').textContent = burned.percentage.toFixed(0)
+    elem('#burnedPercentage').textContent = burned.percentage.toFixed(0)
 
     console.log('burned.amount', burned.amount, 'totalSupply/1e18', totalSupply/1e18)
     const mined = calculateMinedTokens(burned.amount, totalSupply/1e18)
-    document.getElementById('minedPercentage').textContent = mined.percentage.toFixed(0)
+    elem('#minedPercentage').textContent = mined.percentage.toFixed(0)
 
     // Update time metrics
     LAST_HYPERS_BLOCK_TIME = Math.floor((Date.now() / 1000) - lastBlockTime)
     updatePendingBlockProgress(LAST_HYPERS_BLOCK_TIME)
 
-    document.getElementById('pendingBlockMinerCount').textContent = minersCount
-    document.getElementById('pendingBlockReward').textContent = minerReward/1e18
-    document.getElementById('pendingBlockWinner').textContent = formatSeconds(LAST_HYPERS_BLOCK_TIME)
+    elem('#pendingBlockMinerCount').textContent = minersCount
+    elem('#pendingBlockReward').textContent = minerReward/1e18
+    elem('#pendingBlockWinner').textContent = formatSeconds(LAST_HYPERS_BLOCK_TIME)
 
     // Update gas price
     const gasPriceGwei = web3.utils.fromWei(values.gasPrice, 'gwei')
-    document.getElementById('gasPrice').textContent = `${parseFloat(gasPriceGwei).toFixed(5)} Gwei`
-    document.getElementById('gasPriceUsd').textContent = `$${(parseFloat(gasPriceGwei) * ETH_PRICE * 0.000000001 * 25000000).toFixed(3)}`
+    elem('#gasPrice').textContent = `${parseFloat(gasPriceGwei).toFixed(5)} Gwei`
+    elem('#gasPriceUsd').textContent = `$${(parseFloat(gasPriceGwei) * ETH_PRICE * 0.000000001 * 25000000).toFixed(3)}`
 }
 
 function formatTimeUntil(hours) {
@@ -279,7 +279,7 @@ function formatSeconds(seconds) {
 function updateNextHalving(currentBlock, lastHalvingBlock, halvingInterval) {
     const blocksUntilHalving = (parseInt(lastHalvingBlock) + parseInt(halvingInterval)) - currentBlock
     const hoursUntilHalving = blocksUntilHalving * 60 / 3600; // 60 seconds per block
-    document.getElementById('nextHalving').textContent = formatTimeUntil(hoursUntilHalving)
+    elem('#nextHalving').textContent = formatTimeUntil(hoursUntilHalving)
 }
 
 function calculateReward(blockNumber) {
@@ -338,7 +338,7 @@ let cachedEvents = {}
 async function getNewBlockEvent(blockNumber) {
     if (cachedEvents[blockNumber]) return cachedEvents[blockNumber]
 
-    const blocksScroll = document.getElementById('blocksScroll')
+    const blocksScroll = elem('#blocksScroll')
     const existingBlocks = Array.from(blocksScroll.children)
     let fromBlock, toBlock
     
@@ -452,7 +452,7 @@ async function getBlockTimeDiff(blockNumber) {
 }
 
 async function insertBlockIntoDOM(blockElement, blockNumber) {
-    const blocksScroll = document.getElementById('blocksScroll')
+    const blocksScroll = elem('#blocksScroll')
     const existingBlocks = Array.from(blocksScroll.children)
     if (isNewBlock(blockNumber, existingBlocks)) {
         insertNewBlock(blockElement, existingBlocks, blocksScroll)
@@ -484,7 +484,7 @@ function insertNewBlock(blockElement, existingBlocks, blocksScroll) {
     })
 
     // update latest -1 block winner
-    const lastBlock = document.getElementById(`block-${LAST_HYPERS_BLOCK - 1}`)
+    const lastBlock = elem(`#block-${LAST_HYPERS_BLOCK - 1}`)
     const winnerString = `${createBlockie(cachedWinners[LAST_HYPERS_BLOCK - 1])} ${formatAddress(cachedWinners[LAST_HYPERS_BLOCK - 1])}`
     lastBlock.querySelector('.block-winner').innerHTML = winnerString
 }
@@ -702,7 +702,7 @@ function createPendingBlockElement() {
         <div class="block-miner">Pending block</div>
     `
     
-    block.onclick = () => showBlockMiners(LAST_HYPERS_BLOCK + 1, parseInt(document.getElementById('pendingBlockMinerCount').textContent))
+    block.onclick = () => showBlockMiners(LAST_HYPERS_BLOCK + 1, parseInt(elem('#pendingBlockMinerCount').textContent))
     return block
 }
 
@@ -724,14 +724,14 @@ async function getBlockMiners(blockNumber) {
 }
 
 async function showBlockMiners(blockNumber, minersCount) {
-    const blockDetails = document.getElementById('blockDetails')
+    const blockDetails = elem('#blockDetails')
     // Remove active class from all blocks first
-    document.querySelectorAll('.block').forEach(b => b.classList.remove('active'))
+    elems('.block').forEach(b => b.classList.remove('active'))
     let blockElement
     if (blockNumber > LAST_HYPERS_BLOCK) {
-        blockElement = document.getElementById(`pendingBlock`)
+        blockElement = elem(`#pendingBlock`)
     } else {
-        blockElement = document.getElementById(`block-${blockNumber}`)
+        blockElement = elem(`#block-${blockNumber}`)
     }
     blockElement.classList.add('active')
     blockDetails.classList.add('active')
@@ -744,7 +744,7 @@ async function showBlockMiners(blockNumber, minersCount) {
 }
 
 async function updateBlockMiners(blockNumber, minersCount) {
-    const blockDetails = document.getElementById('blockDetails')
+    const blockDetails = elem('#blockDetails')
     try {
         const miners = await getBlockMiners(blockNumber, parseInt(minersCount))
         blockDetails.innerHTML = await renderBlockDetails(blockNumber, minersCount, miners)
@@ -855,9 +855,9 @@ async function updateAllMetrics() {
             LAST_HYPERS_BLOCK = parseInt(decoded.blockNumber)
             await loadBlock(LAST_HYPERS_BLOCK)
         }
-        const isPendingBlockActive = document.getElementById('pendingBlock').classList.contains('active')
+        const isPendingBlockActive = elem('#pendingBlock').classList.contains('active')
         if (isPendingBlockActive) {
-            const blockTimeElem = document.querySelector('.block-detail-block-time')
+            const blockTimeElem = elem('.block-detail-block-time')
             if (blockTimeElem) {
                 blockTimeElem.textContent = formatSeconds(LAST_HYPERS_BLOCK_TIME)
             }
@@ -882,7 +882,7 @@ async function updateAllMetrics() {
 
 // Add a function to update all relative timestamps
 function updateRelativeTimes() {
-    document.querySelectorAll('.time-ago').forEach(element => {
+    elems('.time-ago').forEach(element => {
         const timestamp = element.dataset.timestamp
         if (timestamp) {
             // Check if this element is inside the latest block
@@ -908,7 +908,7 @@ async function init() {
         multicallContract = new web3.eth.Contract(multicallABI, MULTICALL_ADDRESS)
         batchMinersContract = new web3.eth.Contract(batchMinersABI, BATCH_MINERS_ADDRESS)
         const pendingBlock = createPendingBlockElement()
-        document.getElementById('blocksScroll').appendChild(pendingBlock)
+        elem('#blocksScroll').appendChild(pendingBlock)
         await updateAllMetrics()
 
         initializeInfiniteScroll()
@@ -967,7 +967,7 @@ function calculateBurnedTokens(maxSupply) {
 
 // Remove the load more button event listener and add scroll detection
 function initializeInfiniteScroll() {
-    const container = document.querySelector('.blocks-container')
+    const container = elem('.blocks-container')
     let isDragging = false
     let startX
     let scrollLeft
@@ -1052,14 +1052,14 @@ init();
 
 // Add this to your existing init() function or create a new function
 function initializeExternalLinks() {
-    const modal = document.getElementById('external-link-modal')
+    const modal = elem('#external-link-modal')
     const urlDisplay = modal.querySelector('.external-url')
-    const modalTitle = document.getElementById('modal-title')
-    const modalContent = document.getElementById('modal-content')
+    const modalTitle = elem('#modal-title')
+    const modalContent = elem('#modal-content')
     let pendingUrl = ''
 
     // Handle button links
-    document.querySelectorAll('.button-link').forEach(link => {
+    elems('.button-link').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault()
             pendingUrl = link.dataset.externalUrl
