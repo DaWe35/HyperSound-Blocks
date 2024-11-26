@@ -234,6 +234,7 @@ function updateUI(values, tvlEth) {
     const burned = calculateBurnedTokens(maxSupply/1e18)
     document.getElementById('burnedPercentage').textContent = burned.percentage.toFixed(0)
 
+    console.log('burned.amount', burned.amount, 'totalSupply/1e18', totalSupply/1e18)
     const mined = calculateMinedTokens(burned.amount, totalSupply/1e18)
     document.getElementById('minedPercentage').textContent = mined.percentage.toFixed(0)
 
@@ -581,21 +582,21 @@ function formatAddress(address, useIconBlockie = false) {
         '0xAD7a813741D66e13F4FaA72B52C1d955EC36e197': 'Blastr?', // https://blastscan.io/address/0xebe3c0e7b01ed23dc33f2a5c26ddbf1b36e9e534
         '0xbC725EfdBE809AEd7f3171D95AD181E82a4eDc6D': 'Blastr?',
         '0x4501a47bB9cb3368893F56E941eCC7f5eedeA6e1': 'Blastr?',
-        '0x1e6f1DA02C11008eC9669A9C297d1C85F6f76075': 'Snoopcat Blastr', // https://x.com/ceston350 https://blastr.xyz/user/0x1e6f1DA02C11008eC9669A9C297d1C85F6f76075/
-        '0x9Ec10f1Ec4ab4A8835685FEd7aBA9A5B8709323d': 'Snoopcat Blastr',
+        '0x1e6f1DA02C11008eC9669A9C297d1C85F6f76075': 'Snoopcat', // https://x.com/ceston350 https://blastr.xyz/user/0x1e6f1DA02C11008eC9669A9C297d1C85F6f76075/
+        '0x9Ec10f1Ec4ab4A8835685FEd7aBA9A5B8709323d': 'Snoopcat',
         '0x287bdf8c332d44bb015f8b4deb6513010c951f39': 'beast_ico', // https://x.com/beast_ico https://blastr.xyz/user/0x287bDF8c332D44Bb015F8b4dEb6513010c951f39/
         '0x575412f9217C5737563307A2dA96ABef240F17AE': 'beast_ico',
         '0xa699b06F608A129fFE31B640Aaa1E239337D271a': 'ridamalt.eth',
         '0xB2D2ECC7d94CFb8e70F60AeB97Bf7F4C4cB8eF28': 'Untamed Adam', // https://x.com/adamagb https://blastr.xyz/user/0xB2D2ECC7d94CFb8e70F60AeB97Bf7F4C4cB8eF28/
         '0xeca4BA41913ca2867180c37d80991f916346B68d': 'Untamed Adam', // https://x.com/thewolvesxyz/status/1831745334436876552 https://blastscan.io/tx/0xb8cd6c35b8aed68b24fd8f89edec2142abecfa59e0784b1c2a863c7bc7e8bb1f
         '0x732B486150DB62114b54489bef5520B1ea948877': 'ChaoticRage', // https://x.com/ChaoticRage5 https://blastr.xyz/user/0x732B486150DB62114b54489bef5520B1ea948877/
-        '0xF37e7812A5Fbf4830b6Ff0737A84f49FfEC5a9EC': 'ChinWaggle Blastr', // https://blastr.xyz/user/0xF37e7812A5Fbf4830b6Ff0737A84f49FfEC5a9EC/
-        '0xd674731D13df4133d82333b7017a44866a4C3044': 'ChinWaggle Blastr',
-        '0x24f1786f78ddadccf8707b57c2f5fd3528ad4a85': '40767 Blastr', // https://x.com/Grand4076 https://blastr.xyz/user/0x24f1786f78dDaDCcf8707B57c2F5fd3528AD4a85/
-        '0x411Ec02145090dCdc009d502b7afc7C33aEe545D': '40767 Blastr',
+        '0xF37e7812A5Fbf4830b6Ff0737A84f49FfEC5a9EC': 'ChinWaggle', // https://blastr.xyz/user/0xF37e7812A5Fbf4830b6Ff0737A84f49FfEC5a9EC/
+        '0xd674731D13df4133d82333b7017a44866a4C3044': 'ChinWaggle',
+        '0x24f1786f78ddadccf8707b57c2f5fd3528ad4a85': '40767', // https://x.com/Grand4076 https://blastr.xyz/user/0x24f1786f78dDaDCcf8707B57c2F5fd3528AD4a85/
+        '0x411Ec02145090dCdc009d502b7afc7C33aEe545D': '40767',
         '0x9475FFF502a9D64c2ad7C61C8f92165CABaD5954': 'VitoRamirez', // https://blastr.xyz/user/0x9475FFF502a9D64c2ad7C61C8f92165CABaD5954/
-        '0x5e6238e1b7a367c456fe1c83ea21323095ff7e68': 'Curd1x Blastr', // https://x.com/Curd1x https://blastr.xyz/user/0x5E6238E1B7A367c456fe1C83ea21323095FF7E68/
-        '0x68A8B607684588880edd5214332dE90f2c42129A': 'Curd1x Blastr',
+        '0x5e6238e1b7a367c456fe1c83ea21323095ff7e68': 'Curd1x', // https://x.com/Curd1x https://blastr.xyz/user/0x5E6238E1B7A367c456fe1C83ea21323095FF7E68/
+        '0x68A8B607684588880edd5214332dE90f2c42129A': 'Curd1x',
         '0xd7e832c9a5e289b1d9cabcd2aac38018f16b7a7f': 'GarrettLorman', // https://x.com/GarrettLorman https://blastr.xyz/user/0xd7E832c9a5E289B1d9cabCD2AAc38018f16b7A7f/
         '0x3E8EE7f508465840236e468354B28C62C7eEda57': 'GarrettLorman',
         '0x474379421e2478c062521f4ee1afa27508e2f185': 'Girl', // https://x.com/MySunEyedG1rl https://blastr.xyz/user/0x474379421e2478c062521f4EE1AFA27508e2F185/
@@ -605,8 +606,8 @@ function formatAddress(address, useIconBlockie = false) {
         '0x2f5F5894CBfbAfD4cbd440De418bF864AA703eD0': 'Girl',
         '0x111e318936660AAf49D485C74a77FFccb997D030': 'juri23.eth',
         '0x5126a27683b410822151C70e4BE59a661279c407': 'juri23.eth',
-        '0xd3d4a8fe484ea3682206a49e1405d85aeb1e9a48': 'Carrie Blastr', // https://blastr.xyz/user/0xD3D4A8fe484EA3682206A49e1405d85AEb1e9a48
-        '0x30F0Aa379A8c529EE4a1e246F780b7C40cfE93e7': 'Carrie Blastr',
+        '0xd3d4a8fe484ea3682206a49e1405d85aeb1e9a48': 'Carrie', // https://blastr.xyz/user/0xD3D4A8fe484EA3682206A49e1405d85AEb1e9a48
+        '0x30F0Aa379A8c529EE4a1e246F780b7C40cfE93e7': 'Carrie',
         '0xBDacc7e4eC4F4BE294089d08b31C0f6eE6a36189': 'Sybil main',
         '0x8e17cf9E9e006bdD486Ad96de17Aa2a5a1767338': 'Sybil 1',
         '0x469117a6E560E54A9A35809E1370E48AfBeDFD3b': 'Sybil 2',
