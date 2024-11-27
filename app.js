@@ -618,6 +618,8 @@ function formatAddress(address, useIconBlockie = false) {
         '0x0433abA3ceC621419AC1C54A20FE1bD71bFf3241': 'Sybil 7',
         '0x2CFD2546E9b32E8b7710Ba7bBC869352E9455e08': 'Sybil 8',
         '0x14d1c780216eaB7eDEcC3733890Dab238B7B2AbF': 'Sybil 9',
+        '0x58Ce6fC03561961C9947ba1FfffB9146Bc75d903': 'Irnobody', // https://x.com/irnobody75 https://blastr.xyz/user/0x58Ce6fC03561961C9947ba1FfffB9146Bc75d903
+        '0x44f2484cBc98F2B5184be3eCb5a5DDDa97d967Aa': 'Irnobody',
     }
     
     return knownAddresses[address] || address.substring(2, 6) + '...' + address.substring(38)
