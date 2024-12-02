@@ -668,7 +668,7 @@ function createBlockElement(data) {
         <div class="block-winner" title="Block reward winner">
             ${createBlockie(data.winner)} ${winnerAddress}
         </div>
-        <div class="block-reward" title="Block time: ${formatSeconds(data.blockTimeDiff)} ${data.blockTimeDiff}">
+        <div class="block-reward" title="Block time: ${formatSeconds(data.blockTimeDiff)}">
             <span class="time-ago" data-timestamp="${data.blockTime}">
                 ${formatTimeAgo(data.blockTime, false)}
             </span>
