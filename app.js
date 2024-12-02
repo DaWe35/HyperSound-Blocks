@@ -11,7 +11,7 @@ const VERSION = urlParams.get('v')
 let HYPERS_ADDRESS, ABI, web3, contract, gasContract, multicallContract, batchMinersContract
 let ETH_PRICE, UPDATE_INTERVAL, ETH_PRICE_INTERVAL
 let WINNER_OFFSET
-let LAST_HYPERS_BLOCK = 155674
+let LAST_HYPERS_BLOCK = 0
 let LAST_HYPERS_BLOCK_TIME = 0
 
 if (VERSION === '1') {
@@ -215,7 +215,7 @@ function updateUI(values, tvlEth) {
     } = values
 
     // Update metrics
-    // LAST_HYPERS_BLOCK = blockNumber
+    LAST_HYPERS_BLOCK = blockNumber
     elem('#totalSupply').textContent = formatNumber(Math.round(totalSupply/1e18))
     elem('#minerReward').textContent = minerReward/1e18
     elem('#minerRewardUsd').textContent = (minerReward/1e18 * intrinsicValueUsd).toFixed(3)
@@ -856,7 +856,7 @@ async function updateAllMetrics() {
         updateNextHalving(decoded.blockNumber, decoded.lastHalvingBlock, decoded.halvingInterval)
 
         if (LAST_HYPERS_BLOCK !== parseInt(decoded.blockNumber)) {
-            //LAST_HYPERS_BLOCK = parseInt(decoded.blockNumber)
+            LAST_HYPERS_BLOCK = parseInt(decoded.blockNumber)
             await loadBlock(LAST_HYPERS_BLOCK)
         }
         const isPendingBlockActive = elem('#pendingBlock').classList.contains('active')
