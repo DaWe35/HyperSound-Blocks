@@ -185,7 +185,7 @@ button:hover {
 .blocks-scroll {
     display: flex;
     gap: 20px;
-    padding: 0 20px;
+    padding: 0 calc(50vw - 600px);
     position: relative;
 }
 
@@ -211,7 +211,7 @@ button:hover {
     position: absolute;
     transition: height 1s linear;
     max-height: 100%;
-    transition: height 0.5s linear;
+    transition: height 1s linear;
     background: rgba(255, 255, 255, 0.05);
     background: linear-gradient(
         to bottom,

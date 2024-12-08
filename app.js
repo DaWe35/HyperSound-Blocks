@@ -87,31 +87,15 @@ function formatSeconds(seconds) {
 
 let loadedBlocks = new Set()
 
-async function loadBlock(blockNumber) {
-    if (loadedBlocks.has(blockNumber)) return
+async function loadBlock(block) {
+    if (loadedBlocks.has(block.number)) return
     
     try {
-        loadedBlocks.add(blockNumber)
-        const blockData = await fetchBlockData(blockNumber)
-        const blockElement = createBlockElement(blockData)
-        await insertBlockIntoDOM(blockElement, blockNumber)
+        loadedBlocks.add(block.number)
+        const blockElement = createBlockElement(block)
+        await insertBlockIntoDOM(blockElement, block.number)
     } catch (error) {
-        console.error(`Error loading block ${blockNumber}:`, error)
-    }
-}
-
-async function fetchBlockData(blockNumber) {
-    const block = await web3.eth.getBlock(blockNumber)
-    
-    return {
-        blockNumber: block.number,
-        transactions: block.transactions.length,
-        miner: block.miner,
-        timestamp: block.timestamp,
-        baseFee: block.baseFeePerGas,
-        blockHash: block.hash,
-        gasUsed: block.gasUsed,
-        gasLimit: block.gasLimit,
+        console.error(`Error loading block ${block.number}:`, error)
     }
 }
 
@@ -149,8 +133,6 @@ function insertNewBlock(blockElement, existingBlocks, blocksScroll) {
 
     // update latest -1 block winner
     const lastBlock = elem(`#block-${LAST_ETH_BLOCK - 1}`)
-    const winnerString = `${createBlockie(cachedWinners[LAST_ETH_BLOCK - 1])} ${formatAddress(cachedWinners[LAST_ETH_BLOCK - 1])}`
-    lastBlock.querySelector('.block-winner').innerHTML = winnerString
 }
 
 function insertHistoricalBlock(blockElement, existingBlocks, blocksScroll) {
@@ -197,7 +179,13 @@ function formatAddress(address) {
     // We respect the privacy of our users, so please only add addresses that have been PUBLICLY associated with it's owner.
     const knownAddresses = {
         '0x0000000000000000000000000000000000000000': 'Zero Address',
-        // Add any known Blast validators/miners here
+        '0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5': 'beaverbuild',
+        '0x4838B106FCe9647Bdf1E7877BF73cE8B0BAD5f97': 'Titan Builder',
+        '0x7e2a2FA2a064F693f0a55C5639476d913Ff12D05': 'MEV Builder',
+        '0x388C818CA8B9251b393131C08a736A67ccB19297': 'Lido: Execution Layer Rewards Vault',
+        '0x1f9090aaE28b8a3dCeaDf281B0F12828e676c326': 'rsync-builder.eth',
+        '0x4675C7e5BaAFBFFbca748158bEcBA61ef3b0a263': 'Coinbase: MEV Builder',
+        
     }
     
     return knownAddresses[address] || address.substring(2, 6) + '...' + address.substring(38)
@@ -223,38 +211,38 @@ function formatTimeAgo(timestamp, showSeconds = true) {
     }
 }
 
-function createBlockElement(data) {
-    const block = document.createElement('div')
-    block.className = 'block'
-    block.id = `block-${data.blockNumber}`
+function createBlockElement(block) {
+    const blockElem = document.createElement('div')
+    blockElem.className = 'block'
+    blockElem.id = `block-${block.number}`
 
-    const fillPercentage = Math.min(data.gasUsed / data.gasLimit * 100, 100)
-    block.style.setProperty('--fill-percentage', `${fillPercentage}%`)
+    const fillPercentage = Math.min(block.gasUsed / block.gasLimit * 100, 100)
+    blockElem.style.setProperty('--fill-percentage', `${fillPercentage}%`)
     
-    block.innerHTML = `
+    blockElem.innerHTML = `
         <div class="progress-bar"></div>
         <div class="block-decoration"></div>
-        <div class="block-number">#${data.blockNumber}</div>
+        <div class="block-number">#${block.number}</div>
         <div class="block-miner-count">
-            ${data.transactions}
+            ${block.transactions.length}
             <span class="mdi mdi-swap-horizontal"></span>
         </div>
         <div class="block-gas" title="Block miner">
             <i class="mdi mdi-gas-station"></i>
-            ${formatGasPrice(data.baseFee)}
+            ${formatGasPrice(block.baseFeePerGas)}
         </div>
-        <div class="block-reward" title="Block timestamp: ${data.timestamp}">
-            <span class="time-ago" data-timestamp="${data.timestamp}">
-                ${formatTimeAgo(data.timestamp, false)}
+        <div class="block-reward" title="Block timestamp: ${block.timestamp}">
+            <span class="time-ago" data-timestamp="${block.timestamp}">
+                ${formatTimeAgo(block.timestamp, false)}
             </span>
         </div>
         <div class="block-miner" title="Block issuer">
-            ${createBlockie(data.miner)} ${formatAddress(data.miner)}
+            ${createBlockie(block.miner)} ${formatAddress(block.miner)}
         </div>
     `
     
-    block.onclick = () => showBlockDetails(data.blockNumber)
-    return block
+    blockElem.onclick = () => showBlockDetails(block.number)
+    return blockElem
 }
 
 function createPendingBlockElement() {
@@ -265,7 +253,7 @@ function createPendingBlockElement() {
     block.innerHTML = `
         <div class="progress-bar"></div>
         <div class="block-decoration"></div>
-        <div class="block-number" id="pendingBlockNumber"></div>
+        <div class="block-number">Pending...</div>
         <div class="block-miner-count">
             <span id="pendingBlockMinerCount">...</span>
             <span class="mdi mdi-swap-horizontal"></span>
@@ -300,6 +288,7 @@ async function showBlockDetails(blockNumber) {
     blockDetails.classList.add('active')
     
     try {
+        console.log('getBlock()', blockNumber)
         const block = await web3.eth.getBlock(blockNumber)
         if (!block) {
             blockDetails.innerHTML = '<p>Block details not available</p>'
@@ -308,6 +297,7 @@ async function showBlockDetails(blockNumber) {
 
         const transactions = await Promise.all(
             block.transactions.slice(0, 10).map(async txHash => {
+                console.log('getTransaction() getTransactionReceipt()', txHash)
                 const tx = await web3.eth.getTransaction(txHash)
                 const receipt = await web3.eth.getTransactionReceipt(txHash)
                 return { ...tx, status: receipt.status }
@@ -407,6 +397,7 @@ async function init() {
         
         ETH_PRICE_INTERVAL = setInterval(updateEthPrice, 60000)
         
+        console.log('getBlockNumber()')
         const latestBlock = await web3.eth.getBlockNumber()
         loadInitialBlocks(latestBlock - 1)
     } catch (error) {
@@ -417,7 +408,9 @@ async function init() {
 async function loadInitialBlocks(blockNumber) {
     for (let i = 0; i < 9; i++) {
         await sleep(100)
-        await loadBlock(blockNumber - i)
+        console.log('getBlock()', blockNumber - i)
+        const block = await web3.eth.getBlock(blockNumber - i)
+        await loadBlock(block)
     }
 }
 
@@ -485,9 +478,11 @@ function initializeInfiniteScroll() {
         const { scrollLeft, scrollWidth, clientWidth } = container
         if ((scrollWidth - (scrollLeft + clientWidth)) / clientWidth < 0.2) {
             const oldestBlock = Math.min(...Array.from(loadedBlocks))
-            for (let i = 1; i <= 5; i++) {
-                await sleep(100)
-                await loadBlock(oldestBlock - i)
+            for (let i = 1; i <= 10; i++) {
+                await sleep(200)
+                console.log('getBlock()', oldestBlock - i)
+                const block = await web3.eth.getBlock(oldestBlock - i)
+                await loadBlock(block)
             }
         }
     }, 100))
@@ -529,45 +524,51 @@ function debounce(func, wait) {
     }
 }
 
+function getSecondsAgo(timestamp) {
+    return Math.floor(Date.now() / 1000) - timestamp
+}
+
 function animatePendingBlock(secondsAgo) {
     // Calculate fill percentage (100% at 0s, 0% at 15s for ETH's ~15s block time)
-    const fillPercentage = Math.min(100, (secondsAgo / 15) * 100)
+    const fillPercentage = Math.min(100, (secondsAgo / 12) * 100)
     document.documentElement.style.setProperty('--fill-percentage', `${fillPercentage}%`)
 }
 
 // Add new function to update metrics for ETH blocks
 async function updateAllMetrics() {
     try {
-        const latestBlock = await web3.eth.getBlockNumber()
-        
+        console.log('getBlock(pending)')
+        const pendingBlock = await web3.eth.getBlock('pending')
+        const latestBlock = pendingBlock.number
+
         if (LAST_ETH_BLOCK !== latestBlock) {
             LAST_ETH_BLOCK = latestBlock
-            await loadBlock(LAST_ETH_BLOCK)
+
+            // get latest block
+            console.log('getBlock()', LAST_ETH_BLOCK)
+            const block = await web3.eth.getBlock(LAST_ETH_BLOCK)
+            LAST_BLOCK_TIME = block.timestamp
             
-            // Update pending block number
-            elem('#pendingBlockNumber').textContent = `#${LAST_ETH_BLOCK + 1}`
+            await loadBlock(block)
+
+            // Update gas metrics
+            const gasPrice = web3.utils.fromWei(block.baseFeePerGas, 'gwei')
+            const gasPriceUsd = (parseFloat(gasPrice) * ETH_PRICE * 0.000000001 * 21000).toFixed(3)
+            
+            elem('#gasPrice').textContent = `${parseFloat(gasPrice).toFixed(2)} Gwei`
+            elem('#gasPriceUsd').textContent = `$${gasPriceUsd} per transaction`
+            
+            // Update block metrics
+            elem('#blockNumber').textContent = latestBlock
+            elem('#gasUsed').textContent = formatNumber(block.gasUsed)
+            elem('#gasLimit').textContent = formatNumber(block.gasLimit)
+            elem('#gasUtilization').textContent = `${((block.gasUsed / block.gasLimit) * 100).toFixed(1)}%`
         }
 
-        const block = await web3.eth.getBlock(latestBlock)
-        LAST_BLOCK_TIME = Math.floor(Date.now() / 1000) - block.timestamp
-        
         // Update pending block info
-        animatePendingBlock(LAST_BLOCK_TIME)
-        elem('#pendingBlockWinner').textContent = formatSeconds(LAST_BLOCK_TIME)
-        
-        // Update gas metrics
-        const gasPrice = web3.utils.fromWei(block.baseFeePerGas, 'gwei')
-        const gasPriceUsd = (parseFloat(gasPrice) * ETH_PRICE * 0.000000001 * 21000).toFixed(3)
-        
-        elem('#gasPrice').textContent = `${parseFloat(gasPrice).toFixed(2)} Gwei`
-        elem('#gasPriceUsd').textContent = `$${gasPriceUsd} per transaction`
-        
-        // Update block metrics
-        elem('#blockNumber').textContent = latestBlock
-        elem('#gasUsed').textContent = formatNumber(block.gasUsed)
-        elem('#gasLimit').textContent = formatNumber(block.gasLimit)
-        elem('#gasUtilization').textContent = 
-            `${((block.gasUsed / block.gasLimit) * 100).toFixed(1)}%`
+        const secondsAgo = getSecondsAgo(LAST_BLOCK_TIME)
+        animatePendingBlock(secondsAgo)
+        elem('#pendingBlockWinner').textContent = formatSeconds(secondsAgo)
         
         // Update ETH price
         if (ETH_PRICE) {
@@ -575,11 +576,9 @@ async function updateAllMetrics() {
         }
 
         // Update transaction count in pending block
-        const pendingBlock = await web3.eth.getBlock('pending')
         if (pendingBlock && pendingBlock.transactions) {
             elem('#pendingBlockMinerCount').textContent = pendingBlock.transactions.length
         }
-
     } catch (error) {
         console.error('Error updating metrics:', error)
     }
