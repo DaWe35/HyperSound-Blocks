@@ -20,12 +20,46 @@ const CHAINS = {
             'https://ethereum.publicnode.com',
             'https://rpc.ankr.com/eth',
             'https://cloudflare-eth.com'
-        ],
-        token: {
-            symbol: 'ETH',
-            coingeckoId: 'ethereum',
-            decimals: 18
-        }
+        ]
+    },
+    OPTIMISM: {
+        name: 'Optimism',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_optimism.jpg',
+        blockTime: 2,
+        animationSpeed: '0.5s',
+        explorer: 'https://optimistic.etherscan.io',
+        rpc: [
+            'https://mainnet.optimism.io',
+            'https://optimism.llamarpc.com',
+            'https://optimism.blockpi.network/v1/rpc/public',
+            'https://optimism.meowrpc.com'
+        ]
+    },
+    BASE: {
+        name: 'Base',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_base.jpg',
+        blockTime: 2,
+        animationSpeed: '0.5s',
+        explorer: 'https://basescan.org',
+        rpc: [
+            'https://mainnet.base.org',
+            'https://base.llamarpc.com',
+            'https://base.blockpi.network/v1/rpc/public',
+            'https://base.meowrpc.com'
+        ]
+    },
+    ARBITRUM: {
+        name: 'Arbitrum',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_arbitrum.jpg',
+        blockTime: 0.25,
+        animationSpeed: '0.25s',
+        explorer: 'https://arbiscan.io',
+        rpc: [
+            'https://arb1.arbitrum.io/rpc',
+            'https://arbitrum-one.public.blastapi.io',
+            'https://arbitrum.llamarpc.com',
+            'https://arbitrum.blockpi.network/v1/rpc/public'
+        ]
     },
     BLAST: {
         name: 'Blast',
@@ -39,150 +73,11 @@ const CHAINS = {
             'https://blast.din.dev/rpc',
             'https://blastl2-mainnet.public.blastapi.io',
             'https://blast.blockpi.network/v1/rpc/public'
-        ],
-        token: {
-            symbol: 'ETH',
-            coingeckoId: 'ethereum',
-            decimals: 18
-        }
-    },
-    ARBITRUM: {
-        name: 'Arbitrum',
-        icon: 'https://icons.llamao.fi/icons/chains/rsz_arbitrum.jpg',
-        blockTime: 0.25,
-        animationSpeed: '0.25s',
-        explorer: 'https://arbiscan.io',
-        rpc: [
-            'https://arb1.arbitrum.io/rpc',
-            'https://arbitrum-one.public.blastapi.io',
-            'https://arbitrum.llamarpc.com',
-            'https://arbitrum.blockpi.network/v1/rpc/public'
-        ],
-        token: {
-            symbol: 'ETH',
-            coingeckoId: 'ethereum',
-            decimals: 18
-        }
-    },
-    OPTIMISM: {
-        name: 'Optimism',
-        icon: 'https://icons.llamao.fi/icons/chains/rsz_optimism.jpg',
-        blockTime: 2,
-        animationSpeed: '0.5s',
-        explorer: 'https://optimistic.etherscan.io',
-        rpc: [
-            'https://mainnet.optimism.io',
-            'https://optimism.llamarpc.com',
-            'https://optimism.blockpi.network/v1/rpc/public',
-            'https://optimism.meowrpc.com'
-        ],
-        token: {
-            symbol: 'ETH',
-            coingeckoId: 'ethereum',
-            decimals: 18
-        }
-    },
-    BASE: {
-        name: 'Base',
-        icon: 'https://icons.llamao.fi/icons/chains/rsz_base.jpg',
-        blockTime: 2,
-        animationSpeed: '0.5s',
-        explorer: 'https://basescan.org',
-        rpc: [
-            'https://mainnet.base.org',
-            'https://base.llamarpc.com',
-            'https://base.blockpi.network/v1/rpc/public',
-            'https://base.meowrpc.com'
-        ],
-        token: {
-            symbol: 'ETH',
-            coingeckoId: 'ethereum',
-            decimals: 18
-        }
-    },
-    POLYGON: {
-        name: 'Polygon',
-        icon: 'https://icons.llamao.fi/icons/chains/rsz_polygon.jpg',
-        blockTime: 2,
-        animationSpeed: '0.5s',
-        explorer: 'https://polygonscan.com',
-        rpc: [
-            'https://polygon-rpc.com',
-            'https://polygon.llamarpc.com',
-            'https://polygon.meowrpc.com'
-        ],
-        token: {
-            symbol: 'MATIC',
-            coingeckoId: 'matic-network',
-            decimals: 18
-        }
-    },
-    BSC: {
-        name: 'BNB Chain',
-        icon: 'https://icons.llamao.fi/icons/chains/rsz_bsc.jpg',
-        blockTime: 3,
-        animationSpeed: '0.5s',
-        explorer: 'https://bscscan.com',
-        rpc: [
-            'https://bsc-dataseed.binance.org',
-            'https://bsc-rpc.gateway.pokt.network',
-            'https://bsc.meowrpc.com'
-        ],
-        token: {
-            symbol: 'BNB',
-            coingeckoId: 'binancecoin',
-            decimals: 18
-        }
-    },
-    AVALANCHE: {
-        name: 'Avalanche',
-        icon: 'https://icons.llamao.fi/icons/chains/rsz_avalanche.jpg',
-        blockTime: 2,
-        animationSpeed: '0.5s',
-        explorer: 'https://snowtrace.io',
-        rpc: [
-            'https://api.avax.network/ext/bc/C/rpc',
-            'https://avalanche.public-rpc.com',
-            'https://avalanche.meowrpc.com'
-        ],
-        token: {
-            symbol: 'AVAX',
-            coingeckoId: 'avalanche-2',
-            decimals: 18
-        }
-    },
-    FANTOM: {
-        name: 'Fantom',
-        icon: 'https://icons.llamao.fi/icons/chains/rsz_fantom.jpg',
-        blockTime: 1,
-        animationSpeed: '0.25s',
-        explorer: 'https://ftmscan.com',
-        rpc: [
-            'https://rpc.ftm.tools',
-            'https://fantom.publicnode.com',
-            'https://fantom.meowrpc.com'
-        ],
-        token: {
-            symbol: 'FTM',
-            coingeckoId: 'fantom',
-            decimals: 18
-        }
-    },
-    GNOSIS: {
-        name: 'Gnosis',
-        icon: 'https://icons.llamao.fi/icons/chains/rsz_gnosis.jpg',
-        blockTime: 5,
-        animationSpeed: '0.75s',
-        explorer: 'https://gnosisscan.io',
-        rpc: [
-            'https://rpc.gnosischain.com',
-            'https://gnosis.publicnode.com',
-            'https://gnosis.meowrpc.com'
         ]
     },
-    ZKSYNC: {
+/*     ZKSYNC: {
         name: 'zkSync Era',
-        icon: 'https://icons.llamao.fi/icons/chains/rsz_zksync.jpg',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_zksync%20era.jpg',
         blockTime: 1,
         animationSpeed: '0.25s',
         explorer: 'https://explorer.zksync.io',
@@ -191,11 +86,11 @@ const CHAINS = {
             'https://zksync.meowrpc.com',
             'https://zksync.drpc.org'
         ]
-    },
+    }, */
     LINEA: {
         name: 'Linea',
         icon: 'https://icons.llamao.fi/icons/chains/rsz_linea.jpg',
-        blockTime: 12,
+        blockTime: 2,
         animationSpeed: '1s',
         explorer: 'https://lineascan.build',
         rpc: [
@@ -204,7 +99,7 @@ const CHAINS = {
             'https://1rpc.io/linea'
         ]
     },
-    SCROLL: {
+/*     SCROLL: {
         name: 'Scroll',
         icon: 'https://icons.llamao.fi/icons/chains/rsz_scroll.jpg',
         blockTime: 3,
@@ -215,11 +110,11 @@ const CHAINS = {
             'https://scroll.drpc.org',
             'https://scroll-mainnet.public.blastapi.io'
         ]
-    },
+    }, */
     MANTA: {
         name: 'Manta',
         icon: 'https://icons.llamao.fi/icons/chains/rsz_manta.jpg',
-        blockTime: 2,
+        blockTime: 10,
         animationSpeed: '0.5s',
         explorer: 'https://pacific-explorer.manta.network',
         rpc: [
@@ -227,51 +122,52 @@ const CHAINS = {
             'https://manta-pacific.drpc.org'
         ]
     },
-    MANTLE: {
-        name: 'Mantle',
-        icon: 'https://icons.llamao.fi/icons/chains/rsz_mantle.jpg',
-        blockTime: 0.5,
-        animationSpeed: '0.25s',
-        explorer: 'https://explorer.mantle.xyz',
-        rpc: [
-            'https://rpc.mantle.xyz',
-            'https://mantle.publicnode.com',
-            'https://mantle.drpc.org'
-        ]
-    },
-    METIS: {
-        name: 'Metis',
-        icon: 'https://icons.llamao.fi/icons/chains/rsz_metis.jpg',
+    POLYGON_ZKEVM: {
+        name: 'Polygon zkEVM',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_polygon-zkevm.jpg',
         blockTime: 2,
         animationSpeed: '0.5s',
-        explorer: 'https://andromeda-explorer.metis.io',
+        explorer: 'https://zkevm.polygonscan.com',
         rpc: [
-            'https://andromeda.metis.io/?owner=1088',
-            'https://metis.drpc.org'
+            'https://zkevm-rpc.com',
+            'https://polygon-zkevm.drpc.org',
+            'https://1rpc.io/polygon/zkevm'
         ]
     },
-    CELO: {
-        name: 'Celo',
-        icon: 'https://icons.llamao.fi/icons/chains/rsz_celo.jpg',
-        blockTime: 5,
-        animationSpeed: '0.75s',
-        explorer: 'https://celoscan.io',
+/*     STARKNET: {
+        name: 'StarkNet',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_starknet.jpg',
+        blockTime: 1,
+        animationSpeed: '0.25s',
+        explorer: 'https://starkscan.co',
         rpc: [
-            'https://forno.celo.org',
-            'https://celo.meowrpc.com',
-            'https://1rpc.io/celo'
+            'https://free-rpc.nethermind.io/mainnet-juno',
+            'https://starknet-mainnet.public.blastapi.io'
         ]
     },
-    KAVA: {
-        name: 'Kava',
-        icon: 'https://icons.llamao.fi/icons/chains/rsz_kava.jpg',
-        blockTime: 6,
-        animationSpeed: '0.75s',
-        explorer: 'https://kavascan.com',
+    TAIKO: {
+        name: 'Taiko',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_taiko.jpg',
+        blockTime: 3,
+        animationSpeed: '0.5s',
+        explorer: 'https://explorer.katla.taiko.xyz',
         rpc: [
-            'https://evm.kava.io',
-            'https://kava.api.onfinality.io/public',
-            'https://kava-rpc.publicnode.com'
+            'https://rpc.mainnet.taiko.xyz',
+            'https://taiko-rpc.publicnode.com',
+            'https://rpc.ankr.com/taiko',
+            'https://taiko-mainnet.gateway.tenderly.co',
+            'https://taiko.drpc.org'
+        ]
+    }, */
+    MODE: {
+        name: 'Mode',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_mode.jpg',
+        blockTime: 2,
+        animationSpeed: '0.5s',
+        explorer: 'https://explorer.mode.network',
+        rpc: [
+            'https://mainnet.mode.network',
+            'https://1rpc.io/mode'
         ]
     }
 }
