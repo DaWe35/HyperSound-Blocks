@@ -185,7 +185,7 @@ button:hover {
 .blocks-scroll {
     display: flex;
     gap: 20px;
-    padding: 0 calc(50vw - 600px);
+    padding: 0 20px;
     position: relative;
 }
 
@@ -201,21 +201,23 @@ button:hover {
     transition: transform 2s ease-out;
 }
 
-#pendingBlock {
-    background: rgba(255, 255, 255, 0.05);
-}
-
 .progress-bar {
     height: var(--fill-percentage);
-    transition: top 1s linear;
     content: "";
     width: 100%;
     bottom: 0;
     left: 0;
     right: 0;
-    background: rgba(255, 255, 255, 0.05);
     position: absolute;
     transition: height 1s linear;
+    max-height: 100%;
+    transition: height 0.5s linear;
+    background: rgba(255, 255, 255, 0.05);
+    background: linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.06),
+        rgba(255, 255, 255, 0.02)
+    );
 }
 
 .block-decoration:before {
@@ -319,7 +321,7 @@ button:hover {
     margin: 10px 0;
 }
 
-.block-winner {
+.block-gas {
     font-size: 20px;
     text-align: center;
     margin: 5px 0;
@@ -524,4 +526,157 @@ button:hover {
     background: rgba(255, 255, 255, 0.08);
     width: var(--fill-percentage);
     transition: width 1s linear;
+}
+
+/* Add new styles for transaction items */
+.transactions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.transaction-item {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.tx-hash {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tx-status {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.tx-status.success {
+    background: rgba(0, 255, 0, 0.1);
+    color: #00ff00;
+}
+
+.tx-status.failed {
+    background: rgba(255, 0, 0, 0.1);
+    color: #ff4444;
+}
+
+.tx-addresses {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.tx-value {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+}
+
+.contract-creation {
+    color: #ff9900;
+    font-style: italic;
+}
+
+.contract-interaction {
+    background: rgba(0, 150, 255, 0.1);
+    color: #0096ff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+/* Update metrics for ETH blocks */
+.metric-eth {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.metric-eth .metric-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+}
+
+.metric-eth .metric-value {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+/* Update block head list for ETH blocks */
+.block-head-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.block-head-item {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 15px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.block-head-item .mdi {
+    font-size: 20px;
+    opacity: 0.7;
+}
+
+/* Add loading animation for transaction fetching */
+@keyframes shimmer {
+    0% {
+        background-position: -468px 0;
+    }
+    100% {
+        background-position: 468px 0;
+    }
+}
+
+.loading-transaction {
+    background: linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0.05) 8%,
+        rgba(255, 255, 255, 0.1) 18%,
+        rgba(255, 255, 255, 0.05) 33%
+    );
+    background-size: 800px 104px;
+    animation: shimmer 1.5s linear infinite;
+    border-radius: 8px;
+    height: 80px;
+    margin-bottom: 10px;
+}
+
+/* Update responsive design */
+@media screen and (max-width: 768px) {
+    .block-head-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .tx-hash {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .tx-value {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
 }
