@@ -2,6 +2,7 @@ const MULTICALL_ADDRESS = '0xcA11bde05977b3631167028862bE2a173976CA11'
 
 const urlParams = new URLSearchParams(window.location.search)
 const VERSION = urlParams.get('v')
+const CHAIN_PARAM = urlParams.get('chain')?.toUpperCase() || 'ETHER'
 
 let web3
 let ETH_PRICE, UPDATE_INTERVAL, ETH_PRICE_INTERVAL
@@ -15,6 +16,7 @@ const CHAINS = {
         blockTime: 12,
         animationSpeed: '1s',
         explorer: 'https://etherscan.io',
+        maxChangeRate: BigInt(1250), // 12.5%
         rpc: [
             'https://eth.llamarpc.com',
             'https://ethereum.publicnode.com',
@@ -28,6 +30,7 @@ const CHAINS = {
         blockTime: 2,
         animationSpeed: '0.5s',
         explorer: 'https://optimistic.etherscan.io',
+        maxChangeRate: BigInt(200), // 2%
         rpc: [
             'https://mainnet.optimism.io',
             'https://optimism.llamarpc.com',
@@ -41,6 +44,7 @@ const CHAINS = {
         blockTime: 2,
         animationSpeed: '0.5s',
         explorer: 'https://basescan.org',
+        maxChangeRate: BigInt(200), // 2%
         rpc: [
             'https://mainnet.base.org',
             'https://base.llamarpc.com',
@@ -48,12 +52,14 @@ const CHAINS = {
             'https://base.meowrpc.com'
         ]
     },
-    ARBITRUM: {
-        name: 'Arbitrum',
+   //Block time is so fast, new block loading needs to be fixed
+   ARBITRUM: {
+        name: 'Arbitrum (buggy)',
         icon: 'https://icons.llamao.fi/icons/chains/rsz_arbitrum.jpg',
         blockTime: 0.25,
         animationSpeed: '0.25s',
         explorer: 'https://arbiscan.io',
+        maxChangeRate: BigInt(800), // 8%
         rpc: [
             'https://arb1.arbitrum.io/rpc',
             'https://arbitrum-one.public.blastapi.io',
@@ -67,6 +73,7 @@ const CHAINS = {
         blockTime: 2,
         animationSpeed: '0.5s',
         explorer: 'https://blastscan.io',
+        maxChangeRate: BigInt(200), // 2%
         rpc: [
             'https://rpc.blast.io',
             'https://rpc.ankr.com/blast',
@@ -93,6 +100,7 @@ const CHAINS = {
         blockTime: 2,
         animationSpeed: '1s',
         explorer: 'https://lineascan.build',
+        maxChangeRate: BigInt(200), // 2%
         rpc: [
             'https://rpc.linea.build',
             'https://linea.drpc.org',
@@ -117,6 +125,7 @@ const CHAINS = {
         blockTime: 10,
         animationSpeed: '0.5s',
         explorer: 'https://pacific-explorer.manta.network',
+        maxChangeRate: BigInt(2000), // 20%
         rpc: [
             'https://pacific-rpc.manta.network/http',
             'https://manta-pacific.drpc.org'
@@ -128,6 +137,7 @@ const CHAINS = {
         blockTime: 2,
         animationSpeed: '0.5s',
         explorer: 'https://zkevm.polygonscan.com',
+        maxChangeRate: BigInt(200), // 2%
         rpc: [
             'https://zkevm-rpc.com',
             'https://polygon-zkevm.drpc.org',
@@ -165,6 +175,7 @@ const CHAINS = {
         blockTime: 2,
         animationSpeed: '0.5s',
         explorer: 'https://explorer.mode.network',
+        maxChangeRate: BigInt(2000), // 20%
         rpc: [
             'https://mainnet.mode.network',
             'https://1rpc.io/mode'
@@ -172,8 +183,26 @@ const CHAINS = {
     }
 }
 
-let CURRENT_CHAIN = CHAINS.ETHER
+let CURRENT_CHAIN = CHAINS[CHAIN_PARAM] || CHAINS.ETHER
 document.documentElement.style.setProperty('--animation-speed', CURRENT_CHAIN.animationSpeed)
+
+function updatePageTitles() {
+    // Update the page title (shown in browser tab)
+    document.title = `${CURRENT_CHAIN.name} Block Explorer`
+    
+    // Update the h1 title if it exists
+    const h1 = document.querySelector('h1')
+    if (h1) {
+        h1.textContent = `${CURRENT_CHAIN.name} Block Explorer`
+    }
+
+    // Update the etherscan logo link
+    const etherscanLink = document.querySelector('#etherscan-link')
+    if (etherscanLink) {
+        etherscanLink.href = CURRENT_CHAIN.explorer
+        etherscanLink.title = `Open ${CURRENT_CHAIN.name} Explorer`
+    }
+}
 
 async function findWorkingRPC() {
     for (const rpc of CURRENT_CHAIN.rpc) {
@@ -511,7 +540,7 @@ async function showBlockDetails(blockNumber) {
                             ${tx.to ? `To: ${formatAddress(tx.to)}` : '<span class="contract-creation">Contract Creation</span>'}
                         </div>
                         <div class="tx-value">
-                            Value: ${formatTokenValue(tx.value)}
+                            Value: ${web3.utils.fromWei(tx.value, 'ether')} ETH
                             ${tx.input && tx.input !== '0x' ? 
                                 '<span class="contract-interaction">Contract Interaction</span>' : 
                                 ''
@@ -528,9 +557,11 @@ async function showBlockDetails(blockNumber) {
 }
 
 function formatGasPrice(wei) {
-    if (!wei) return '0.00 Gwei'
+    if (!wei) return '0 wei'
     const gwei = web3.utils.fromWei(wei, 'gwei')
-    return `${parseFloat(gwei).toFixed(2)} Gwei`
+    if (BigInt(wei) < BigInt(1000)) return `${parseInt(wei)} wei`
+    if (BigInt(wei) < BigInt(10000000)) return `${parseFloat(gwei).toFixed(5)}`
+    return `${parseFloat(gwei).toFixed(2)} gwei`
 }
 
 // Initialize
@@ -538,6 +569,8 @@ async function init() {
     try {
         if (UPDATE_INTERVAL) clearInterval(UPDATE_INTERVAL)
         if (ETH_PRICE_INTERVAL) clearInterval(ETH_PRICE_INTERVAL)
+
+        updatePageTitles()
 
         await updateEthPrice()
         
@@ -714,14 +747,15 @@ async function updateAllMetrics() {
 
             // Calculate next block's estimated base fee
             const estimatedBaseFee = calculateNextBaseFee(block)
+            const estimatedGasPriceStr = formatGasPrice(estimatedBaseFee.toString())
+            console.log('estimatedBaseFee', estimatedBaseFee)
             const estimatedGasPrice = web3.utils.fromWei(estimatedBaseFee.toString(), 'gwei')
-            elem('#pendingBlockGas').textContent = `${parseFloat(estimatedGasPrice).toFixed(2)} Gwei`
+            elem('#pendingBlockGas').textContent = estimatedGasPriceStr
 
             // Update gas metrics
-            const gasPrice = estimatedGasPrice
             const gasPriceUsd = (parseFloat(estimatedGasPrice) * ETH_PRICE * 0.000000001 * 21000).toFixed(3)
             
-            elem('#gasPrice').textContent = `${parseFloat(gasPrice).toFixed(2)} Gwei`
+            elem('#gasPrice').textContent = estimatedGasPriceStr
             elem('#gasPriceUsd').textContent = `$${gasPriceUsd} per transaction`
             
             // Update block metrics
@@ -818,25 +852,19 @@ function calculateNextBaseFee(lastBlock) {
     const targetGasUsed = BigInt(lastBlock.gasLimit) / BigInt(2)
     const baseFeePerGas = BigInt(lastBlock.baseFeePerGas)
     const gasUsed = BigInt(lastBlock.gasUsed)
-    const gasLimit = BigInt(lastBlock.gasLimit)
     
-    // EIP-1559 formula
     if (gasUsed === targetGasUsed) return baseFeePerGas
-    if (gasUsed > targetGasUsed) {
-        const gasUsedDelta = gasUsed - targetGasUsed
-        const baseFeeMaxChange = (baseFeePerGas * BigInt(125)) / BigInt(1000)
-        const baseFeePerGasDelta = 
-            Math.max(
-                Number((baseFeeMaxChange * gasUsedDelta) / targetGasUsed),
-                1
-            )
-        return baseFeePerGas + BigInt(baseFeePerGasDelta)
-    } else {
-        const gasUsedDelta = targetGasUsed - gasUsed
-        const baseFeeMaxChange = (baseFeePerGas * BigInt(125)) / BigInt(1000)
-        const baseFeePerGasDelta = (baseFeeMaxChange * gasUsedDelta) / targetGasUsed
-        return baseFeePerGas - baseFeePerGasDelta
-    }
+    
+    const gasUsedDelta = gasUsed > targetGasUsed ? 
+        gasUsed - targetGasUsed : 
+        targetGasUsed - gasUsed
+    
+    const baseFeeMaxChange = (baseFeePerGas * CURRENT_CHAIN.maxChangeRate) / BigInt(10000)
+    const baseFeePerGasDelta = (baseFeeMaxChange * gasUsedDelta) / targetGasUsed
+    
+    return gasUsed > targetGasUsed ? 
+        baseFeePerGas + BigInt(Math.max(Number(baseFeePerGasDelta), 1)) :
+        baseFeePerGas - baseFeePerGasDelta
 }
 
 // Update the chain selector function
@@ -859,7 +887,7 @@ function createChainSelector() {
             <div class="chain-options">
                 ${Object.entries(CHAINS).map(([key, chain]) => `
                     <div class="chain-option ${CURRENT_CHAIN.name === chain.name ? 'active' : ''}" 
-                         data-chain="${key}">
+                         data-chain="${key.toLowerCase()}">
                         <img src="${chain.icon}" alt="${chain.name}" />
                         <span>${chain.name}</span>
                     </div>
@@ -900,28 +928,21 @@ function createChainSelector() {
 
     // Chain selection
     options.forEach(option => {
-        option.addEventListener('click', async () => {
+        option.addEventListener('click', () => {
             const chainKey = option.dataset.chain
-            CURRENT_CHAIN = CHAINS[chainKey]
-            
-            // Update selected display
-            selected.innerHTML = `
-                <img src="${CURRENT_CHAIN.icon}" alt="${CURRENT_CHAIN.name}" />
-                <span>${CURRENT_CHAIN.name}</span>
-                <i class="mdi mdi-chevron-down"></i>
-            `
-            
-            // Update UI
-            document.documentElement.style.setProperty('--animation-speed', CURRENT_CHAIN.animationSpeed)
-            options.forEach(opt => opt.classList.toggle('active', opt === option))
-            dropdown.classList.remove('show')
-            
-            // Reset and reinitialize with new chain
-            loadedBlocks = new Set()
-            elem('#blocksScroll').innerHTML = ''
-            await init()
+            // Update URL and reload page
+            const newUrl = new URL(window.location)
+            newUrl.searchParams.set('chain', chainKey)
+            window.location.href = newUrl.toString()
         })
     })
+}
+
+// Update the URL when directly accessing a chain
+if (CURRENT_CHAIN && !CHAIN_PARAM) {
+    const newUrl = new URL(window.location)
+    newUrl.searchParams.set('chain', Object.keys(CHAINS).find(key => CHAINS[key] === CURRENT_CHAIN).toLowerCase())
+    window.history.replaceState({}, '', newUrl.toString())
 }
 
 // Call this in init()
