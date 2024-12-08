@@ -525,3 +525,19 @@ button:hover {
     width: var(--fill-percentage);
     transition: width 1s linear;
 }
+
+footer {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-secondary);
+    margin-top: 40px;
+}
+
+footer p {
+    font-size: 14px;
+}
+
+/* Make the heart red */
+footer p span {
+    color: #ff0000;
+}
