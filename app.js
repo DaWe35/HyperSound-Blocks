@@ -8,15 +8,279 @@ let ETH_PRICE, UPDATE_INTERVAL, ETH_PRICE_INTERVAL
 let LAST_ETH_BLOCK = 0
 let LAST_BLOCK_TIME = 0
 
-const RPC_ENDPOINTS = [
-    'https://eth.llamarpc.com',
-    'https://ethereum.publicnode.com',
-    'https://rpc.ankr.com/eth',
-    'https://cloudflare-eth.com'
-]
+const CHAINS = {
+    ETHER: {
+        name: 'Ethereum',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_ethereum.jpg',
+        blockTime: 12,
+        animationSpeed: '1s',
+        explorer: 'https://etherscan.io',
+        rpc: [
+            'https://eth.llamarpc.com',
+            'https://ethereum.publicnode.com',
+            'https://rpc.ankr.com/eth',
+            'https://cloudflare-eth.com'
+        ],
+        token: {
+            symbol: 'ETH',
+            coingeckoId: 'ethereum',
+            decimals: 18
+        }
+    },
+    BLAST: {
+        name: 'Blast',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_blast.jpg',
+        blockTime: 2,
+        animationSpeed: '0.5s',
+        explorer: 'https://blastscan.io',
+        rpc: [
+            'https://rpc.blast.io',
+            'https://rpc.ankr.com/blast',
+            'https://blast.din.dev/rpc',
+            'https://blastl2-mainnet.public.blastapi.io',
+            'https://blast.blockpi.network/v1/rpc/public'
+        ],
+        token: {
+            symbol: 'ETH',
+            coingeckoId: 'ethereum',
+            decimals: 18
+        }
+    },
+    ARBITRUM: {
+        name: 'Arbitrum',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_arbitrum.jpg',
+        blockTime: 0.25,
+        animationSpeed: '0.25s',
+        explorer: 'https://arbiscan.io',
+        rpc: [
+            'https://arb1.arbitrum.io/rpc',
+            'https://arbitrum-one.public.blastapi.io',
+            'https://arbitrum.llamarpc.com',
+            'https://arbitrum.blockpi.network/v1/rpc/public'
+        ],
+        token: {
+            symbol: 'ETH',
+            coingeckoId: 'ethereum',
+            decimals: 18
+        }
+    },
+    OPTIMISM: {
+        name: 'Optimism',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_optimism.jpg',
+        blockTime: 2,
+        animationSpeed: '0.5s',
+        explorer: 'https://optimistic.etherscan.io',
+        rpc: [
+            'https://mainnet.optimism.io',
+            'https://optimism.llamarpc.com',
+            'https://optimism.blockpi.network/v1/rpc/public',
+            'https://optimism.meowrpc.com'
+        ],
+        token: {
+            symbol: 'ETH',
+            coingeckoId: 'ethereum',
+            decimals: 18
+        }
+    },
+    BASE: {
+        name: 'Base',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_base.jpg',
+        blockTime: 2,
+        animationSpeed: '0.5s',
+        explorer: 'https://basescan.org',
+        rpc: [
+            'https://mainnet.base.org',
+            'https://base.llamarpc.com',
+            'https://base.blockpi.network/v1/rpc/public',
+            'https://base.meowrpc.com'
+        ],
+        token: {
+            symbol: 'ETH',
+            coingeckoId: 'ethereum',
+            decimals: 18
+        }
+    },
+    POLYGON: {
+        name: 'Polygon',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_polygon.jpg',
+        blockTime: 2,
+        animationSpeed: '0.5s',
+        explorer: 'https://polygonscan.com',
+        rpc: [
+            'https://polygon-rpc.com',
+            'https://polygon.llamarpc.com',
+            'https://polygon.meowrpc.com'
+        ],
+        token: {
+            symbol: 'MATIC',
+            coingeckoId: 'matic-network',
+            decimals: 18
+        }
+    },
+    BSC: {
+        name: 'BNB Chain',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_bsc.jpg',
+        blockTime: 3,
+        animationSpeed: '0.5s',
+        explorer: 'https://bscscan.com',
+        rpc: [
+            'https://bsc-dataseed.binance.org',
+            'https://bsc-rpc.gateway.pokt.network',
+            'https://bsc.meowrpc.com'
+        ],
+        token: {
+            symbol: 'BNB',
+            coingeckoId: 'binancecoin',
+            decimals: 18
+        }
+    },
+    AVALANCHE: {
+        name: 'Avalanche',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_avalanche.jpg',
+        blockTime: 2,
+        animationSpeed: '0.5s',
+        explorer: 'https://snowtrace.io',
+        rpc: [
+            'https://api.avax.network/ext/bc/C/rpc',
+            'https://avalanche.public-rpc.com',
+            'https://avalanche.meowrpc.com'
+        ],
+        token: {
+            symbol: 'AVAX',
+            coingeckoId: 'avalanche-2',
+            decimals: 18
+        }
+    },
+    FANTOM: {
+        name: 'Fantom',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_fantom.jpg',
+        blockTime: 1,
+        animationSpeed: '0.25s',
+        explorer: 'https://ftmscan.com',
+        rpc: [
+            'https://rpc.ftm.tools',
+            'https://fantom.publicnode.com',
+            'https://fantom.meowrpc.com'
+        ],
+        token: {
+            symbol: 'FTM',
+            coingeckoId: 'fantom',
+            decimals: 18
+        }
+    },
+    GNOSIS: {
+        name: 'Gnosis',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_gnosis.jpg',
+        blockTime: 5,
+        animationSpeed: '0.75s',
+        explorer: 'https://gnosisscan.io',
+        rpc: [
+            'https://rpc.gnosischain.com',
+            'https://gnosis.publicnode.com',
+            'https://gnosis.meowrpc.com'
+        ]
+    },
+    ZKSYNC: {
+        name: 'zkSync Era',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_zksync.jpg',
+        blockTime: 1,
+        animationSpeed: '0.25s',
+        explorer: 'https://explorer.zksync.io',
+        rpc: [
+            'https://mainnet.era.zksync.io',
+            'https://zksync.meowrpc.com',
+            'https://zksync.drpc.org'
+        ]
+    },
+    LINEA: {
+        name: 'Linea',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_linea.jpg',
+        blockTime: 12,
+        animationSpeed: '1s',
+        explorer: 'https://lineascan.build',
+        rpc: [
+            'https://rpc.linea.build',
+            'https://linea.drpc.org',
+            'https://1rpc.io/linea'
+        ]
+    },
+    SCROLL: {
+        name: 'Scroll',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_scroll.jpg',
+        blockTime: 3,
+        animationSpeed: '0.5s',
+        explorer: 'https://scrollscan.com',
+        rpc: [
+            'https://rpc.scroll.io',
+            'https://scroll.drpc.org',
+            'https://scroll-mainnet.public.blastapi.io'
+        ]
+    },
+    MANTA: {
+        name: 'Manta',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_manta.jpg',
+        blockTime: 2,
+        animationSpeed: '0.5s',
+        explorer: 'https://pacific-explorer.manta.network',
+        rpc: [
+            'https://pacific-rpc.manta.network/http',
+            'https://manta-pacific.drpc.org'
+        ]
+    },
+    MANTLE: {
+        name: 'Mantle',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_mantle.jpg',
+        blockTime: 0.5,
+        animationSpeed: '0.25s',
+        explorer: 'https://explorer.mantle.xyz',
+        rpc: [
+            'https://rpc.mantle.xyz',
+            'https://mantle.publicnode.com',
+            'https://mantle.drpc.org'
+        ]
+    },
+    METIS: {
+        name: 'Metis',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_metis.jpg',
+        blockTime: 2,
+        animationSpeed: '0.5s',
+        explorer: 'https://andromeda-explorer.metis.io',
+        rpc: [
+            'https://andromeda.metis.io/?owner=1088',
+            'https://metis.drpc.org'
+        ]
+    },
+    CELO: {
+        name: 'Celo',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_celo.jpg',
+        blockTime: 5,
+        animationSpeed: '0.75s',
+        explorer: 'https://celoscan.io',
+        rpc: [
+            'https://forno.celo.org',
+            'https://celo.meowrpc.com',
+            'https://1rpc.io/celo'
+        ]
+    },
+    KAVA: {
+        name: 'Kava',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_kava.jpg',
+        blockTime: 6,
+        animationSpeed: '0.75s',
+        explorer: 'https://kavascan.com',
+        rpc: [
+            'https://evm.kava.io',
+            'https://kava.api.onfinality.io/public',
+            'https://kava-rpc.publicnode.com'
+        ]
+    }
+}
+
+let CURRENT_CHAIN = CHAINS.ETHER
+document.documentElement.style.setProperty('--animation-speed', CURRENT_CHAIN.animationSpeed)
 
 async function findWorkingRPC() {
-    for (const rpc of RPC_ENDPOINTS) {
+    for (const rpc of CURRENT_CHAIN.rpc) {
         try {
             const web3Test = new Web3(rpc)
             await web3Test.eth.getBlockNumber()
@@ -195,10 +459,10 @@ function formatAddress(address) {
 function formatTimeAgo(timestamp, showSeconds = true) {
     const seconds = Math.floor((Date.now() / 1000) - timestamp);
     
-    if (seconds < 60 && showSeconds) {
-        return `${seconds} seconds ago`;
-    } else if (seconds < 60) {
+    if (seconds < CURRENT_CHAIN.blockTime && !showSeconds) {
         return 'just now';
+    } else if (seconds < 60) {
+        return `${seconds} seconds ago`;
     } else if (seconds < 3600) {
         const minutes = Math.floor(seconds / 60);
         return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`;
@@ -319,7 +583,7 @@ async function showBlockDetails(blockNumber) {
                 </div>
                 <div class="block-head-item">
                     <span class="mdi mdi-pickaxe"></span>
-                    Miner: <a href="https://etherscan.io/address/${block.miner}" target="_blank">
+                    Miner: <a href="${CURRENT_CHAIN.explorer}/address/${block.miner}" target="_blank">
                         ${createBlockie(block.miner)} ${formatAddress(block.miner)}
                     </a>
                 </div>
@@ -338,7 +602,7 @@ async function showBlockDetails(blockNumber) {
                 ${transactions.map(tx => `
                     <div class="transaction-item ${tx.status ? 'success' : 'failed'}">
                         <div class="tx-hash">
-                            <a href="https://etherscan.io/tx/${tx.hash}" target="_blank">
+                            <a href="${CURRENT_CHAIN.explorer}/tx/${tx.hash}" target="_blank">
                                 ${tx.hash.substring(0, 10)}...${tx.hash.substring(58)}
                             </a>
                             ${tx.status ? 
@@ -351,7 +615,7 @@ async function showBlockDetails(blockNumber) {
                             ${tx.to ? `To: ${formatAddress(tx.to)}` : '<span class="contract-creation">Contract Creation</span>'}
                         </div>
                         <div class="tx-value">
-                            Value: ${web3.utils.fromWei(tx.value, 'ether')} ETH
+                            Value: ${formatTokenValue(tx.value)}
                             ${tx.input && tx.input !== '0x' ? 
                                 '<span class="contract-interaction">Contract Interaction</span>' : 
                                 ''
@@ -531,7 +795,7 @@ function getSecondsAgo(timestamp) {
 
 function animatePendingBlock(secondsAgo) {
     // Calculate fill percentage (100% at 0s, 0% at 15s for ETH's ~15s block time)
-    const fillPercentage = Math.min(100, (secondsAgo / 12) * 100)
+    const fillPercentage = Math.min(100, (secondsAgo / CURRENT_CHAIN.blockTime) * 100)
     document.documentElement.style.setProperty('--fill-percentage', `${fillPercentage}%`)
 }
 
@@ -678,3 +942,91 @@ function calculateNextBaseFee(lastBlock) {
         return baseFeePerGas - baseFeePerGasDelta
     }
 }
+
+// Update the chain selector function
+function createChainSelector() {
+    const header = document.querySelector('header')
+    const selector = document.createElement('div')
+    selector.className = 'chain-dropdown'
+    
+    selector.innerHTML = `
+        <div class="chain-selected">
+            <img src="${CURRENT_CHAIN.icon}" alt="${CURRENT_CHAIN.name}" />
+            <span>${CURRENT_CHAIN.name}</span>
+            <i class="mdi mdi-chevron-down"></i>
+        </div>
+        <div class="chain-dropdown-content">
+            <div class="chain-search">
+                <input type="text" placeholder="Search chains..." />
+                <i class="mdi mdi-magnify"></i>
+            </div>
+            <div class="chain-options">
+                ${Object.entries(CHAINS).map(([key, chain]) => `
+                    <div class="chain-option ${CURRENT_CHAIN.name === chain.name ? 'active' : ''}" 
+                         data-chain="${key}">
+                        <img src="${chain.icon}" alt="${chain.name}" />
+                        <span>${chain.name}</span>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `
+    
+    header.appendChild(selector)
+
+    // Add click handlers
+    const selected = selector.querySelector('.chain-selected')
+    const dropdown = selector.querySelector('.chain-dropdown-content')
+    const searchInput = selector.querySelector('input')
+    const options = selector.querySelectorAll('.chain-option')
+
+    // Toggle dropdown
+    selected.addEventListener('click', () => {
+        dropdown.classList.toggle('show')
+        searchInput.focus()
+    })
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!selector.contains(e.target)) {
+            dropdown.classList.remove('show')
+        }
+    })
+
+    // Search functionality
+    searchInput.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase()
+        options.forEach(option => {
+            const chainName = option.querySelector('span').textContent.toLowerCase()
+            option.style.display = chainName.includes(searchTerm) ? 'flex' : 'none'
+        })
+    })
+
+    // Chain selection
+    options.forEach(option => {
+        option.addEventListener('click', async () => {
+            const chainKey = option.dataset.chain
+            CURRENT_CHAIN = CHAINS[chainKey]
+            
+            // Update selected display
+            selected.innerHTML = `
+                <img src="${CURRENT_CHAIN.icon}" alt="${CURRENT_CHAIN.name}" />
+                <span>${CURRENT_CHAIN.name}</span>
+                <i class="mdi mdi-chevron-down"></i>
+            `
+            
+            // Update UI
+            document.documentElement.style.setProperty('--animation-speed', CURRENT_CHAIN.animationSpeed)
+            options.forEach(opt => opt.classList.toggle('active', opt === option))
+            dropdown.classList.remove('show')
+            
+            // Reset and reinitialize with new chain
+            loadedBlocks = new Set()
+            elem('#blocksScroll').innerHTML = ''
+            await init()
+        })
+    })
+}
+
+// Call this in init()
+createChainSelector()

@@ -209,9 +209,8 @@ button:hover {
     left: 0;
     right: 0;
     position: absolute;
-    transition: height 1s linear;
+    transition: height var(--animation-speed) linear;
     max-height: 100%;
-    transition: height 1s linear;
     background: rgba(255, 255, 255, 0.05);
     background: linear-gradient(
         to bottom,
@@ -278,11 +277,11 @@ button:hover {
 
 /* Animation for new blocks */
 .block.slide-in {
-    animation: slideIn 1s ease-out forwards;
+    animation: slideIn var(--animation-speed) ease-out forwards;
 }
 
 .block.fade-in {
-    animation: fadeIn 1s ease-out forwards;
+    animation: fadeIn var(--animation-speed) ease-out forwards;
 }
 
 @keyframes slideIn {
@@ -525,7 +524,7 @@ button:hover {
     height: 12px;
     background: rgba(255, 255, 255, 0.08);
     width: var(--fill-percentage);
-    transition: width 1s linear;
+    transition: width var(--animation-speed) linear;
 }
 
 /* Add new styles for transaction items */
@@ -695,4 +694,142 @@ footer p {
 /* Make the heart red */
 footer p span {
     color: #ff0000;
+}
+
+.chain-dropdown {
+    position: relative;
+    margin-left: auto;
+}
+
+.chain-selected {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.05);
+    transition: all 0.2s;
+    min-width: 140px;
+}
+
+.chain-selected:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.chain-dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    margin-top: 8px;
+    background: var(--background);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    width: 240px;
+    max-height: 400px;
+    overflow: hidden;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.chain-dropdown-content.show {
+    display: block;
+}
+
+.chain-search {
+    position: relative;
+    padding: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.chain-search input {
+    width: 100%;
+    padding: 8px 32px 8px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.chain-search input:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.chain-search .mdi-magnify {
+    position: absolute;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+}
+
+.chain-options {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 8px;
+}
+
+.chain-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.chain-option:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.chain-option.active {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.chain-option img {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+}
+
+.chain-option span {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Custom scrollbar for the options */
+.chain-options::-webkit-scrollbar {
+    width: 8px;
+}
+
+.chain-options::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.chain-options::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.chain-options::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+@media screen and (max-width: 768px) {
+    .chain-dropdown {
+        margin: 0;
+    }
+    
+    .chain-dropdown-content {
+        position: fixed;
+        top: 80px;
+        left: 20px;
+        right: 20px;
+        width: auto;
+        max-height: calc(100vh - 100px);
+    }
 }
