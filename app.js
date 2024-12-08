@@ -259,7 +259,8 @@ function createPendingBlockElement() {
             <span class="mdi mdi-swap-horizontal"></span>
         </div>
         <div class="block-gas">
-            <small style="color: var(--text-secondary);">Pending...</small>
+            <i class="mdi mdi-gas-station"></i>
+            <span id="pendingBlockGas">...</span>
         </div>
         <div class="block-reward" id="pendingBlockWinner">...</div>
         <div class="block-miner">
@@ -551,9 +552,14 @@ async function updateAllMetrics() {
             
             await loadBlock(block)
 
+            // Calculate next block's estimated base fee
+            const estimatedBaseFee = calculateNextBaseFee(block)
+            const estimatedGasPrice = web3.utils.fromWei(estimatedBaseFee.toString(), 'gwei')
+            elem('#pendingBlockGas').textContent = `${parseFloat(estimatedGasPrice).toFixed(2)} Gwei`
+
             // Update gas metrics
-            const gasPrice = web3.utils.fromWei(block.baseFeePerGas, 'gwei')
-            const gasPriceUsd = (parseFloat(gasPrice) * ETH_PRICE * 0.000000001 * 21000).toFixed(3)
+            const gasPrice = estimatedGasPrice
+            const gasPriceUsd = (parseFloat(estimatedGasPrice) * ETH_PRICE * 0.000000001 * 21000).toFixed(3)
             
             elem('#gasPrice').textContent = `${parseFloat(gasPrice).toFixed(2)} Gwei`
             elem('#gasPriceUsd').textContent = `$${gasPriceUsd} per transaction`
@@ -572,7 +578,7 @@ async function updateAllMetrics() {
         
         // Update ETH price
         if (ETH_PRICE) {
-            elem('#ethPrice').textContent = formatNumber(ETH_PRICE)
+            elem('#ethPrice').textContent = ETH_PRICE.toFixed(0)
         }
 
         // Update transaction count in pending block
@@ -645,4 +651,30 @@ function initializeExternalLinks() {
 // Helper function for sleeping
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+// Add function to calculate next block's base fee
+function calculateNextBaseFee(lastBlock) {
+    const targetGasUsed = BigInt(lastBlock.gasLimit) / BigInt(2)
+    const baseFeePerGas = BigInt(lastBlock.baseFeePerGas)
+    const gasUsed = BigInt(lastBlock.gasUsed)
+    const gasLimit = BigInt(lastBlock.gasLimit)
+    
+    // EIP-1559 formula
+    if (gasUsed === targetGasUsed) return baseFeePerGas
+    if (gasUsed > targetGasUsed) {
+        const gasUsedDelta = gasUsed - targetGasUsed
+        const baseFeeMaxChange = (baseFeePerGas * BigInt(125)) / BigInt(1000)
+        const baseFeePerGasDelta = 
+            Math.max(
+                Number((baseFeeMaxChange * gasUsedDelta) / targetGasUsed),
+                1
+            )
+        return baseFeePerGas + BigInt(baseFeePerGasDelta)
+    } else {
+        const gasUsedDelta = targetGasUsed - gasUsed
+        const baseFeeMaxChange = (baseFeePerGas * BigInt(125)) / BigInt(1000)
+        const baseFeePerGasDelta = (baseFeeMaxChange * gasUsedDelta) / targetGasUsed
+        return baseFeePerGas - baseFeePerGasDelta
+    }
 }
