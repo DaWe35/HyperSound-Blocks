@@ -6,8 +6,10 @@ const CHAIN_PARAM = urlParams.get('chain')?.toUpperCase() || 'ETHER'
 
 let web3
 let ETH_PRICE, UPDATE_INTERVAL, ETH_PRICE_INTERVAL
-let LAST_ETH_BLOCK = 0
-let LAST_BLOCK_TIME = 0
+let LAST_ETH_BLOCK = null
+let LAST_LOADED_BLOCK = null
+let LAST_LOADED_BLOCK_TIME = null
+let OLDEST_LOADED_BLOCK = null
 
 const CHAINS = {
     ETHER: {
@@ -54,10 +56,10 @@ const CHAINS = {
     },
    //Block time is so fast, new block loading needs to be fixed
    ARBITRUM: {
-        name: 'Arbitrum (buggy)',
+        name: 'Arbitrum',
         icon: 'https://icons.llamao.fi/icons/chains/rsz_arbitrum.jpg',
         blockTime: 0.25,
-        animationSpeed: '0.25s',
+        animationSpeed: '0.1s',
         explorer: 'https://arbiscan.io',
         maxChangeRate: BigInt(800), // 8%
         rpc: [
@@ -276,15 +278,26 @@ function formatSeconds(seconds) {
 
 let loadedBlocks = new Set()
 
-async function loadBlock(block) {
-    if (loadedBlocks.has(block.number)) return
+async function loadBlock(blockNumber) {
+    if (loadedBlocks.has(blockNumber)) return
     
+    const block = await web3.eth.getBlock(blockNumber)
     try {
         loadedBlocks.add(block.number)
+        if (LAST_LOADED_BLOCK === null || block.number > LAST_LOADED_BLOCK) {
+            LAST_LOADED_BLOCK_TIME = block.timestamp
+            LAST_LOADED_BLOCK = block.number
+        }
+        if (OLDEST_LOADED_BLOCK === null || block.number < OLDEST_LOADED_BLOCK) {
+            OLDEST_LOADED_BLOCK = block.number
+        }
+
         const blockElement = createBlockElement(block)
         await insertBlockIntoDOM(blockElement, block.number)
+        return block
     } catch (error) {
         console.error(`Error loading block ${block.number}:`, error)
+        return null
     }
 }
 
@@ -319,9 +332,6 @@ function insertNewBlock(blockElement, existingBlocks, blocksScroll) {
     existingBlocks.slice(1).forEach(block => {
         block.classList.add('slide-in')
     })
-
-    // update latest -1 block winner
-    const lastBlock = elem(`#block-${LAST_ETH_BLOCK - 1}`)
 }
 
 function insertHistoricalBlock(blockElement, existingBlocks, blocksScroll) {
@@ -444,8 +454,7 @@ function createPendingBlockElement() {
         <div class="block-decoration"></div>
         <div class="block-number">Pending...</div>
         <div class="block-miner-count">
-            <span id="pendingBlockMinerCount">...</span>
-            <span class="mdi mdi-swap-horizontal"></span>
+            <span id="pendingBlockMinerCount"> &nbsp; </span>
         </div>
         <div class="block-gas">
             <i class="mdi mdi-gas-station"></i>
@@ -581,30 +590,19 @@ async function init() {
         const pendingBlock = createPendingBlockElement()
         elem('#blocksScroll').appendChild(pendingBlock)
         
-        await updateAllMetrics()
+        await checkNewBlock()
         initializeInfiniteScroll()
         
         UPDATE_INTERVAL = setInterval(() => {
-            updateAllMetrics()
+            checkNewBlock()
             updateRelativeTimes()
         }, 1000)
         
         ETH_PRICE_INTERVAL = setInterval(updateEthPrice, 60000)
-        
-        console.log('getBlockNumber()')
-        const latestBlock = await web3.eth.getBlockNumber()
-        loadInitialBlocks(latestBlock - 1)
+
+        newBlockLoaderQueue() // async loop to load new blocks
     } catch (error) {
         console.error('Initialization error:', error)
-    }
-}
-
-async function loadInitialBlocks(blockNumber) {
-    for (let i = 0; i < 9; i++) {
-        await sleep(100)
-        console.log('getBlock()', blockNumber - i)
-        const block = await web3.eth.getBlock(blockNumber - i)
-        await loadBlock(block)
     }
 }
 
@@ -673,10 +671,8 @@ function initializeInfiniteScroll() {
         if ((scrollWidth - (scrollLeft + clientWidth)) / clientWidth < 0.2) {
             const oldestBlock = Math.min(...Array.from(loadedBlocks))
             for (let i = 1; i <= 10; i++) {
-                await sleep(200)
-                console.log('getBlock()', oldestBlock - i)
-                const block = await web3.eth.getBlock(oldestBlock - i)
-                await loadBlock(block)
+                await sleep(100)
+                await loadBlock(oldestBlock - i)
             }
         }
     }, 100))
@@ -728,23 +724,46 @@ function animatePendingBlock(secondsAgo) {
     document.documentElement.style.setProperty('--fill-percentage', `${fillPercentage}%`)
 }
 
+// call this after LAST_LOADED_BLOCK and LAST_ETH_BLOCK initialized
+async function newBlockLoaderQueue() {
+    while (true) {
+        // load 10 blocks on load
+        const blocksScroll = elem('#blocksScroll')
+        const existingBlocks = Array.from(blocksScroll.children)
+        if (existingBlocks.length < 10) {
+            const block = await loadBlock(OLDEST_LOADED_BLOCK ? OLDEST_LOADED_BLOCK - 1 : LAST_ETH_BLOCK)
+            if (existingBlocks.length === 1) {
+                updateAllMetrics(block)
+            }
+        }
+
+        // load new blocks if any
+        if (LAST_LOADED_BLOCK < LAST_ETH_BLOCK) {
+            await loadBlock(LAST_LOADED_BLOCK + 1)
+        }
+
+        await sleep(10)
+    }
+}
+
+async function checkNewBlock() {
+    const latestBlock = await web3.eth.getBlockNumber()
+    elem('#blockNumber').textContent = latestBlock
+
+
+    if (LAST_ETH_BLOCK && latestBlock > LAST_ETH_BLOCK) {
+        updateAllMetrics(null)
+    }
+    LAST_ETH_BLOCK = latestBlock
+    if (LAST_LOADED_BLOCK === null) { // load n-10 blocks when first loaded
+        LAST_LOADED_BLOCK = latestBlock
+    }
+}
+
 // Add new function to update metrics for ETH blocks
-async function updateAllMetrics() {
+async function updateAllMetrics(block = null) {
     try {
-
-        const latestBlock = await web3.eth.getBlockNumber()
-        console.log('latestBlock', latestBlock)
-
-        if (LAST_ETH_BLOCK !== latestBlock) {
-            LAST_ETH_BLOCK = latestBlock
-
-            // get latest block
-            console.log('getBlock()', LAST_ETH_BLOCK)
-            const block = await web3.eth.getBlock(LAST_ETH_BLOCK)
-            LAST_BLOCK_TIME = block.timestamp
-            
-            await loadBlock(block)
-
+        if (block !== null) { // if new block is loaded
             // Calculate next block's estimated base fee
             const estimatedBaseFee = calculateNextBaseFee(block)
             const estimatedGasPriceStr = formatGasPrice(estimatedBaseFee.toString())
@@ -758,23 +777,20 @@ async function updateAllMetrics() {
             elem('#gasPrice').textContent = estimatedGasPriceStr
             elem('#gasPriceUsd').textContent = `$${gasPriceUsd} per transaction`
             
-            // Update block metrics
-            elem('#blockNumber').textContent = LAST_ETH_BLOCK
+            // Updatce block metricsc
             elem('#gasUsed').textContent = formatNumber(block.gasUsed)
             elem('#gasLimit').textContent = formatNumber(block.gasLimit)
             elem('#gasUtilization').textContent = `${((block.gasUsed / block.gasLimit) * 100).toFixed(1)}%`
         }
 
         // Update pending block info
-        const secondsAgo = getSecondsAgo(LAST_BLOCK_TIME)
+        const secondsAgo = getSecondsAgo(LAST_LOADED_BLOCK_TIME)
         animatePendingBlock(secondsAgo)
-        elem('#pendingBlockWinner').textContent = formatSeconds(secondsAgo)
         
         // Update ETH price
         if (ETH_PRICE) {
             elem('#ethPrice').textContent = ETH_PRICE.toFixed(0)
         }
-
     } catch (error) {
         console.error('Error updating metrics:', error)
     }
