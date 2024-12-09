@@ -731,9 +731,9 @@ function animatePendingBlock(secondsAgo) {
 // Add new function to update metrics for ETH blocks
 async function updateAllMetrics() {
     try {
-        console.log('getBlock(pending)')
-        const pendingBlock = await web3.eth.getBlock('pending')
-        const latestBlock = pendingBlock.number
+
+        const latestBlock = await web3.eth.getBlockNumber()
+        console.log('latestBlock', latestBlock)
 
         if (LAST_ETH_BLOCK !== latestBlock) {
             LAST_ETH_BLOCK = latestBlock
@@ -759,7 +759,7 @@ async function updateAllMetrics() {
             elem('#gasPriceUsd').textContent = `$${gasPriceUsd} per transaction`
             
             // Update block metrics
-            elem('#blockNumber').textContent = latestBlock
+            elem('#blockNumber').textContent = LAST_ETH_BLOCK
             elem('#gasUsed').textContent = formatNumber(block.gasUsed)
             elem('#gasLimit').textContent = formatNumber(block.gasLimit)
             elem('#gasUtilization').textContent = `${((block.gasUsed / block.gasLimit) * 100).toFixed(1)}%`
@@ -775,10 +775,6 @@ async function updateAllMetrics() {
             elem('#ethPrice').textContent = ETH_PRICE.toFixed(0)
         }
 
-        // Update transaction count in pending block
-        if (pendingBlock && pendingBlock.transactions) {
-            elem('#pendingBlockMinerCount').textContent = pendingBlock.transactions.length
-        }
     } catch (error) {
         console.error('Error updating metrics:', error)
     }
