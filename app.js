@@ -20,10 +20,10 @@ const CHAINS = {
         explorer: 'https://etherscan.io',
         maxChangeRate: BigInt(1250), // 12.5%
         rpc: [
+            'https://cloudflare-eth.com',
             'https://eth.llamarpc.com',
             'https://ethereum.publicnode.com',
             'https://rpc.ankr.com/eth',
-            'https://cloudflare-eth.com'
         ]
     },
     OPTIMISM: {
