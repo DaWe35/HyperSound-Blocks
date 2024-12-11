@@ -381,9 +381,9 @@ function formatAddress(address) {
         '0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5': 'beaverbuild',
         '0x4838B106FCe9647Bdf1E7877BF73cE8B0BAD5f97': 'Titan Builder',
         '0x7e2a2FA2a064F693f0a55C5639476d913Ff12D05': 'MEV Builder',
-        '0x388C818CA8B9251b393131C08a736A67ccB19297': 'Lido: Execution Layer Rewards Vault',
+        '0x388C818CA8B9251b393131C08a736A67ccB19297': 'Lido',
         '0x1f9090aaE28b8a3dCeaDf281B0F12828e676c326': 'rsync-builder.eth',
-        '0x4675C7e5BaAFBFFbca748158bEcBA61ef3b0a263': 'Coinbase: MEV Builder',
+        '0x4675C7e5BaAFBFFbca748158bEcBA61ef3b0a263': 'Coinbase',
         
     }
     
