@@ -18,8 +18,9 @@ EVM Block Explorer is visualization tool for exploring EVM blockchains, inspired
 1. Clone the repository:
 
 ``` bash
-git clone https://github.com/DaWe35/HyperSound-Blocks.git
-cd HyperSound-Blocks
+git clone https://github.com/DaWe35/HyperSound-Blocks.git Ethereum-Blocks
+cd Ethereum-Blocks
+git switch ethereum
 ```
 
 2. Start the application using Docker Compose:
