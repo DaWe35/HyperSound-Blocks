@@ -139,7 +139,7 @@ const CHAINS = {
     TAIKO: {
         name: 'Taiko',
         icon: 'https://icons.llamao.fi/icons/chains/rsz_taiko.jpg',
-        blockTime: 3,
+        blockTime: 20,
         animationSpeed: '0.5s',
         explorer: 'https://explorer.katla.taiko.xyz',
         maxChangeRate: BigInt(200), // 2%
