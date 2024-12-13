@@ -1,9 +1,9 @@
 version: '3.8'
 
 services:
-  hypersound-blocks:
+  ethereum-blocks:
     image: busybox
-    container_name: hypersound-blocks
+    container_name: ethereum-blocks
     ports:
       - "9997:80"
     volumes:
