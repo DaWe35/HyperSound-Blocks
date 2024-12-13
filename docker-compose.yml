@@ -5,7 +5,7 @@ services:
     image: busybox
     container_name: hypersound-blocks
     ports:
-      - "9999:80"
+      - "9997:80"
     volumes:
       - ./:/var/www:ro
     command: httpd -f -p 80 -h /var/www

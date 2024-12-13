@@ -29,4 +29,4 @@ git switch ethereum
 docker compose up -d
 ```
 
-3. Access the application at `http://localhost:9999`
+3. Access the application at `http://localhost:9997`
