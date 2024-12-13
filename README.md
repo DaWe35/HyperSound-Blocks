@@ -1,8 +1,8 @@
-# HyperSound Blocks
+# EVM Block Explorer
 
-https://hypers.coolhd.hu
+https://explorer.coolhd.hu
 
-HyperSound Blocks is visualization tool for exploring and managing HyperSound Money blocks.
+EVM Block Explorer is visualization tool for exploring EVM blockchains, inspired by [Mempool Space](https://mempool.space).
 
 ## Preview
 

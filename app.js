@@ -20,12 +20,41 @@ const CHAINS = {
         explorer: 'https://etherscan.io',
         maxChangeRate: BigInt(1250), // 12.5%
         rpc: [
-            'https://cloudflare-eth.com',
             'https://eth.llamarpc.com',
             'https://ethereum.publicnode.com',
             'https://rpc.ankr.com/eth',
+            'https://cloudflare-eth.com',
+            'https://eth.drpc.org'
         ]
     },
+    ARBITRUM: {
+         name: 'Arbitrum',
+         icon: 'https://icons.llamao.fi/icons/chains/rsz_arbitrum.jpg',
+         blockTime: 0.25,
+         animationSpeed: '0.1s',
+         explorer: 'https://arbiscan.io',
+         maxChangeRate: BigInt(800), // 8%
+         rpc: [
+             'https://arb1.arbitrum.io/rpc',
+             'https://arbitrum-one.public.blastapi.io',
+             'https://arbitrum.llamarpc.com',
+             'https://arbitrum.blockpi.network/v1/rpc/public'
+         ]
+     },
+     BASE: {
+         name: 'Base',
+         icon: 'https://icons.llamao.fi/icons/chains/rsz_base.jpg',
+         blockTime: 2,
+         animationSpeed: '0.5s',
+         explorer: 'https://basescan.org',
+         maxChangeRate: BigInt(200), // 2%
+         rpc: [
+             'https://mainnet.base.org',
+             'https://base.llamarpc.com',
+             'https://base.blockpi.network/v1/rpc/public',
+             'https://base.meowrpc.com'
+         ]
+     },
     OPTIMISM: {
         name: 'Optimism',
         icon: 'https://icons.llamao.fi/icons/chains/rsz_optimism.jpg',
@@ -38,35 +67,6 @@ const CHAINS = {
             'https://optimism.llamarpc.com',
             'https://optimism.blockpi.network/v1/rpc/public',
             'https://optimism.meowrpc.com'
-        ]
-    },
-    BASE: {
-        name: 'Base',
-        icon: 'https://icons.llamao.fi/icons/chains/rsz_base.jpg',
-        blockTime: 2,
-        animationSpeed: '0.5s',
-        explorer: 'https://basescan.org',
-        maxChangeRate: BigInt(200), // 2%
-        rpc: [
-            'https://mainnet.base.org',
-            'https://base.llamarpc.com',
-            'https://base.blockpi.network/v1/rpc/public',
-            'https://base.meowrpc.com'
-        ]
-    },
-   //Block time is so fast, new block loading needs to be fixed
-   ARBITRUM: {
-        name: 'Arbitrum',
-        icon: 'https://icons.llamao.fi/icons/chains/rsz_arbitrum.jpg',
-        blockTime: 0.25,
-        animationSpeed: '0.1s',
-        explorer: 'https://arbiscan.io',
-        maxChangeRate: BigInt(800), // 8%
-        rpc: [
-            'https://arb1.arbitrum.io/rpc',
-            'https://arbitrum-one.public.blastapi.io',
-            'https://arbitrum.llamarpc.com',
-            'https://arbitrum.blockpi.network/v1/rpc/public'
         ]
     },
     BLAST: {
@@ -84,53 +84,17 @@ const CHAINS = {
             'https://blast.blockpi.network/v1/rpc/public'
         ]
     },
-/*     ZKSYNC: {
-        name: 'zkSync Era',
-        icon: 'https://icons.llamao.fi/icons/chains/rsz_zksync%20era.jpg',
-        blockTime: 1,
-        animationSpeed: '0.25s',
-        explorer: 'https://explorer.zksync.io',
-        rpc: [
-            'https://mainnet.era.zksync.io',
-            'https://zksync.meowrpc.com',
-            'https://zksync.drpc.org'
-        ]
-    }, */
-    LINEA: {
-        name: 'Linea',
-        icon: 'https://icons.llamao.fi/icons/chains/rsz_linea.jpg',
+    POLYGON: {
+        name: 'Polygon',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_polygon.jpg',
         blockTime: 2,
-        animationSpeed: '1s',
-        explorer: 'https://lineascan.build',
+        animationSpeed: '0.5s',
+        explorer: 'https://polygonscan.com',
         maxChangeRate: BigInt(200), // 2%
         rpc: [
-            'https://rpc.linea.build',
-            'https://linea.drpc.org',
-            'https://1rpc.io/linea'
-        ]
-    },
-/*     SCROLL: {
-        name: 'Scroll',
-        icon: 'https://icons.llamao.fi/icons/chains/rsz_scroll.jpg',
-        blockTime: 3,
-        animationSpeed: '0.5s',
-        explorer: 'https://scrollscan.com',
-        rpc: [
-            'https://rpc.scroll.io',
-            'https://scroll.drpc.org',
-            'https://scroll-mainnet.public.blastapi.io'
-        ]
-    }, */
-    MANTA: {
-        name: 'Manta',
-        icon: 'https://icons.llamao.fi/icons/chains/rsz_manta.jpg',
-        blockTime: 10,
-        animationSpeed: '0.5s',
-        explorer: 'https://pacific-explorer.manta.network',
-        maxChangeRate: BigInt(2000), // 20%
-        rpc: [
-            'https://pacific-rpc.manta.network/http',
-            'https://manta-pacific.drpc.org'
+            'https://polygon-rpc.com',
+            'https://polygon.llamarpc.com',
+            'https://polygon.drpc.org'
         ]
     },
     POLYGON_ZKEVM: {
@@ -146,15 +110,30 @@ const CHAINS = {
             'https://1rpc.io/polygon/zkevm'
         ]
     },
-/*     STARKNET: {
-        name: 'StarkNet',
-        icon: 'https://icons.llamao.fi/icons/chains/rsz_starknet.jpg',
+    ZKSYNC: {
+        name: 'zkSync Era',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_zksync%20era.jpg',
         blockTime: 1,
         animationSpeed: '0.25s',
-        explorer: 'https://starkscan.co',
+        explorer: 'https://explorer.zksync.io',
+        maxChangeRate: BigInt(200), // 2%
         rpc: [
-            'https://free-rpc.nethermind.io/mainnet-juno',
-            'https://starknet-mainnet.public.blastapi.io'
+            'https://mainnet.era.zksync.io',
+            'https://zksync.meowrpc.com',
+            'https://zksync.drpc.org'
+        ]
+    },
+    SCROLL: {
+        name: 'Scroll',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_scroll.jpg',
+        blockTime: 3,
+        animationSpeed: '0.5s',
+        explorer: 'https://scrollscan.com',
+        maxChangeRate: BigInt(200), // 2%
+        rpc: [
+            'https://rpc.scroll.io',
+            'https://scroll.drpc.org',
+            'https://scroll-mainnet.public.blastapi.io'
         ]
     },
     TAIKO: {
@@ -163,12 +142,89 @@ const CHAINS = {
         blockTime: 3,
         animationSpeed: '0.5s',
         explorer: 'https://explorer.katla.taiko.xyz',
+        maxChangeRate: BigInt(200), // 2%
         rpc: [
             'https://rpc.mainnet.taiko.xyz',
             'https://taiko-rpc.publicnode.com',
             'https://rpc.ankr.com/taiko',
             'https://taiko-mainnet.gateway.tenderly.co',
             'https://taiko.drpc.org'
+        ]
+    },
+    BOB: {
+        name: 'Bob',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_bob.jpg',
+        blockTime: 3,
+        animationSpeed: '1s',
+        explorer: 'https://bobscan.io',
+        maxChangeRate: BigInt(2000), // 20%
+        rpc: [
+            'https://rpc.gobob.xyz',
+            'https://bob.gateway.tenderly.co',
+            'https://bob.drpc.org'
+        ]
+    },
+    ZIRCUIT: {
+        name: 'Zircuit',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_zircuit.jpg',
+        blockTime: 2,
+        animationSpeed: '0.5s',
+        explorer: 'https://explorer.zircuit.com/',
+        maxChangeRate: BigInt(200), // 2%
+        rpc: [
+            'https://zircuit1-mainnet.liquify.com',
+            'https://zircuit-mainnet.drpc.org',
+            'https://node.histori.xyz/zircuit-mainnet/8ry9f6t9dct1se2hlagxnd9n2a'
+        ]
+    },
+    LINEA: {
+        name: 'Linea',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_linea.jpg',
+        blockTime: 2,
+        animationSpeed: '0.5s',
+        explorer: 'https://lineascan.build',
+        maxChangeRate: BigInt(200), // 2%
+        rpc: [
+            'https://rpc.linea.build',
+            'https://linea.drpc.org',
+            'https://1rpc.io/linea'
+        ]
+    },
+    BSC: {
+        name: 'BSC',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_bsc.jpg',
+        blockTime: 3,
+        animationSpeed: '0.5s',
+        explorer: 'https://bscscan.com',
+        maxChangeRate: BigInt(2000), // 20%
+        rpc: [
+            'https://bscrpc.com',
+            'https://binance.llamarpc.com',
+            'https://bsc-pokt.nodies.app'
+        ]
+    },
+    MANTA: {
+        name: 'Manta',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_manta.jpg',
+        blockTime: 10,
+        animationSpeed: '0.5s',
+        explorer: 'https://pacific-explorer.manta.network',
+        maxChangeRate: BigInt(200), // 2%
+        rpc: [
+            'https://pacific-rpc.manta.network/http',
+            'https://manta-pacific.drpc.org'
+        ]
+    },
+/*     STARKNET: {
+        name: 'StarkNet',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_starknet.jpg',
+        blockTime: 1,
+        animationSpeed: '0.25s',
+        explorer: 'https://starkscan.co',
+        maxChangeRate: BigInt(200), // 2%
+        rpc: [
+            'https://free-rpc.nethermind.io/mainnet-juno',
+            'https://rpc.starknet.lava.build:443'
         ]
     }, */
     MODE: {
@@ -181,6 +237,160 @@ const CHAINS = {
         rpc: [
             'https://mainnet.mode.network',
             'https://1rpc.io/mode'
+        ]
+    },
+    LISK: {
+        name: 'Lisk',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_lisk.jpg',
+        blockTime: 2,
+        animationSpeed: '0.5s',
+        explorer: 'https://blockscout.lisk.com/',
+        maxChangeRate: BigInt(2000), // 20%
+        rpc: [
+            'https://lisk.gateway.tenderly.co',
+            'https://lisk.drpc.org',
+            'https://rpc.api.lisk.com'
+        ]
+    },
+    AVAX: {
+        name: 'Avalanche',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_avalanche.jpg',
+        blockTime: 3,
+        animationSpeed: '0.5s',
+        explorer: 'https://snowtrace.io/',
+        maxChangeRate: BigInt(2000), // 20%
+        rpc: [
+            'https://rpc.ankr.com/avalanche'
+        ]
+    },
+    ZORA: {
+        name: 'Zora',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_zora.jpg',
+        blockTime: 2,
+        animationSpeed: '0.5s',
+        explorer: 'https://explorer.zora.energy',
+        maxChangeRate: BigInt(2000), // 20%
+        rpc: [
+            'https://rpc.zora.energy',
+            'https://zora.drpc.org',
+            'https://node.histori.xyz/zora-mainnet/8ry9f6t9dct1se2hlagxnd9n2a',
+        ]
+    },
+    FANTOM: {
+        name: 'Fantom',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_fantom.jpg',
+        blockTime: 1,
+        animationSpeed: '0.5s',
+        explorer: 'https://ftmscan.com',
+        maxChangeRate: BigInt(2000), // 20%
+        rpc: [
+            'https://rpcapi.fantom.network',
+            'https://rpc.ftm.tools',
+            'https://rpc.ankr.com/fantom'
+        ]
+    },
+    CORE: {
+        name: 'Core',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_core.jpg',
+        blockTime: 3,
+        animationSpeed: '1s',
+        explorer: 'https://scan.coredao.org/',
+        maxChangeRate: BigInt(2000), // 20%
+        rpc: [
+            'https://rpc.coredao.org',
+            'https://core.drpc.org',
+            'https://rpc.ankr.com/core'
+        ]
+    },
+    CRONOS: {
+        name: 'Cronos',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_cronos.jpg',
+        blockTime: 3,
+        animationSpeed: '1s',
+        explorer: 'https://cronoscan.com',
+        maxChangeRate: BigInt(2000), // 20%
+        rpc: [
+            'https://evm.cronos.org',
+            'https://rpc.ankr.com/cronos',
+            'https://cronos.drpc.org',
+            'https://cronos.blockpi.network/v1/rpc/private'
+        ]
+    },
+    BITLAYER: {
+        name: 'BitLayer',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_bitlayer.jpg',
+        blockTime: 3,
+        animationSpeed: '1s',
+        explorer: 'https://explorer.bitlayer.io',
+        maxChangeRate: BigInt(2000), // 20%
+        rpc: [
+            'https://rpc.bitlayer.io',
+            'https://rpc.bitlayer-rpc.com',
+            'https://rpc.ankr.com/bitlayer'
+        ]
+    },
+    GNOSIS: {
+        name: 'Gnosis',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_gnosis.jpg',
+        blockTime: 5,
+        animationSpeed: '1s',
+        explorer: 'https://gnosisscan.io',
+        maxChangeRate: BigInt(2000), // 20%
+        rpc: [
+            'https://rpc.gnosischain.com',
+            'https://1rpc.io/gnosis',
+            'https://rpc.ankr.com/gnosis'
+        ]
+    },
+    ROOTSTOCK: {
+        name: 'Rootstock',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_rootstock.jpg',
+        blockTime: 30,
+        animationSpeed: '1s',
+        explorer: 'https://explorer.rsk.co',
+        maxChangeRate: BigInt(2000), // 20%
+        rpc: [
+            'https://public-node.rsk.co',
+            'https://rootstock-mainnet.public.blastapi.io',
+            'https://rootstock.drpc.org',
+            'https://mycrypto.rsk.co'
+        ]
+    },
+    APECHAIN: {
+        name: 'ApeChain',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_apechain.jpg',
+        blockTime: 1,
+        animationSpeed: '0.5s',
+        explorer: 'https://explorer.apechain.network/',
+        maxChangeRate: BigInt(2000), // 20%
+        rpc: [
+            'https://rpc.apechain.com',
+            'https://apechain.drpc.org',
+            'https://node.histori.xyz/apechain-mainnet/8ry9f6t9dct1se2hlagxnd9n2a'
+        ]
+    },
+    REYA: {
+        name: 'Reya',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_reya.jpg',
+        blockTime: 2,
+        animationSpeed: '0.5s',
+        explorer: 'https://explorer.reya.network/',
+        maxChangeRate: BigInt(2000), // 20%
+        rpc: [
+            'https://rpc.reya.network'
+        ]
+    },
+    FUSE: {
+        name: 'Fuse',
+        icon: 'https://icons.llamao.fi/icons/chains/rsz_fuse.jpg',
+        blockTime: 5,
+        animationSpeed: '1s',
+        explorer: 'https://explorer.fuse.io/',
+        maxChangeRate: BigInt(2000), // 20%
+        rpc: [
+            'https://rpc.fuse.io',
+            'https://fuse.drpc.org',
+            'hhttps://fuse.liquify.com'
         ]
     }
 }
@@ -284,7 +494,7 @@ async function loadBlock(blockNumber) {
     const block = await web3.eth.getBlock(blockNumber)
     try {
         loadedBlocks.add(block.number)
-        if (LAST_LOADED_BLOCK === null || block.number > LAST_LOADED_BLOCK) {
+        if (LAST_LOADED_BLOCK_TIME === null || block.number > LAST_LOADED_BLOCK) {
             LAST_LOADED_BLOCK_TIME = block.timestamp
             LAST_LOADED_BLOCK = block.number
         }
@@ -570,7 +780,8 @@ function formatGasPrice(wei) {
     const gwei = web3.utils.fromWei(wei, 'gwei')
     if (BigInt(wei) < BigInt(1000)) return `${parseInt(wei)} wei`
     if (BigInt(wei) < BigInt(10000000)) return `${parseFloat(gwei).toFixed(5)}`
-    return `${parseFloat(gwei).toFixed(2)} gwei`
+    if (gwei < 999) return `${parseFloat(gwei).toFixed(2)} gwei`
+    return `${parseFloat(gwei).toFixed(0)} gwei`
 }
 
 // Initialize
@@ -751,7 +962,7 @@ async function checkNewBlock() {
     elem('#blockNumber').textContent = latestBlock
 
 
-    if (LAST_ETH_BLOCK && latestBlock > LAST_ETH_BLOCK) {
+    if (LAST_ETH_BLOCK) {
         updateAllMetrics(null)
     }
     LAST_ETH_BLOCK = latestBlock
@@ -766,16 +977,21 @@ async function updateAllMetrics(block = null) {
         if (block !== null) { // if new block is loaded
             // Calculate next block's estimated base fee
             const estimatedBaseFee = calculateNextBaseFee(block)
-            const estimatedGasPriceStr = formatGasPrice(estimatedBaseFee.toString())
-            console.log('estimatedBaseFee', estimatedBaseFee)
-            const estimatedGasPrice = web3.utils.fromWei(estimatedBaseFee.toString(), 'gwei')
-            elem('#pendingBlockGas').textContent = estimatedGasPriceStr
+            if (estimatedBaseFee) {
+                const estimatedGasPriceStr = formatGasPrice(estimatedBaseFee?.toString())
+                const estimatedGasPrice = web3.utils.fromWei(estimatedBaseFee?.toString(), 'gwei')
+                elem('#pendingBlockGas').textContent = estimatedGasPriceStr
 
-            // Update gas metrics
-            const gasPriceUsd = (parseFloat(estimatedGasPrice) * ETH_PRICE * 0.000000001 * 21000).toFixed(3)
-            
-            elem('#gasPrice').textContent = estimatedGasPriceStr
-            elem('#gasPriceUsd').textContent = `$${gasPriceUsd} per transaction`
+                // Update gas metrics
+                const gasPriceUsd = (parseFloat(estimatedGasPrice) * ETH_PRICE * 0.000000001 * 21000).toFixed(3)
+                elem('#gasPriceUsd').textContent = `$${gasPriceUsd} per transaction`
+                elem('#gasPrice').textContent = estimatedGasPriceStr
+            } else {
+                elem('#pendingBlockGas').textContent = '-'
+                elem('#gasPriceUsd').textContent = '-'
+                elem('#gasPrice').textContent = '-'
+            }
+
             
             // Updatce block metricsc
             elem('#gasUsed').textContent = formatNumber(block.gasUsed)
@@ -861,6 +1077,9 @@ function sleep(ms) {
 
 // Add function to calculate next block's base fee
 function calculateNextBaseFee(lastBlock) {
+    if (CURRENT_CHAIN.name !== 'Ethereum') {
+        return null
+    }
     const targetGasUsed = BigInt(lastBlock.gasLimit) / BigInt(2)
     const baseFeePerGas = BigInt(lastBlock.baseFeePerGas)
     const gasUsed = BigInt(lastBlock.gasUsed)
