@@ -172,6 +172,7 @@ button:hover {
     scrollbar-width: none;
     -ms-overflow-style: none;
     padding-left: 20px;
+    user-select: none;
 }
 
 .blocks-container::-webkit-scrollbar {
