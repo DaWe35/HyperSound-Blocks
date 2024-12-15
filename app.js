@@ -950,7 +950,8 @@ async function newBlockLoaderQueue() {
 
         // load new blocks if any
         if (LAST_LOADED_BLOCK < LAST_ETH_BLOCK) {
-            await loadBlock(LAST_LOADED_BLOCK + 1)
+            const block = await loadBlock(LAST_LOADED_BLOCK + 1)
+            updateAllMetrics(block)
         }
 
         await sleep(10)
