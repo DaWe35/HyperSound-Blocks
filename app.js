@@ -4,6 +4,23 @@ const BATCH_MINERS_ADDRESS = '0x041Ea15f507D1eB956081E3804843EEb6098C3e9'
 const INIT_MAX_SUPPLY = 21000000
 const INITIAL_REWARD = 250
 const HALVING_INTERVAL = 42000
+const GAS_CONTRACT_ADDRESS = '0x420000000000000000000000000000000000000F'
+
+const GAS_CONTRACT_ABI = [{
+    inputs: [{
+        internalType: "bytes",
+        name: "_data",
+        type: "bytes"
+    }],
+    name: "getL1Fee",
+    outputs: [{
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+    }],
+    stateMutability: "view",
+    type: "function"
+}]
 
 const urlParams = new URLSearchParams(window.location.search)
 const VERSION = urlParams.get('v')
@@ -108,6 +125,9 @@ async function multicall(calls) {
 
 // Contract Call Builders
 function buildContractCalls() {
+    // Create mineBatch transaction data
+    const mineBatchData = '0x5680c17b00000000000000000000000000000000000000000000000000000000000003e8'
+
     return [
         {
             target: HYPERS_ADDRESS,
@@ -156,6 +176,10 @@ function buildContractCalls() {
         {
             target: MULTICALL_ADDRESS,
             callData: multicallContract.methods.getEthBalance(HYPERS_ADDRESS).encodeABI()
+        },
+        {
+            target: GAS_CONTRACT_ADDRESS,
+            callData: l1GasContract.methods.getL1Fee(mineBatchData).encodeABI()
         }
     ]
 }
@@ -174,7 +198,8 @@ function decodeResults(results) {
         minersCount: web3.eth.abi.decodeParameter('uint256', results[8]),
         maxSupply: web3.eth.abi.decodeParameter('uint256', results[9]),
         baseFee: web3.eth.abi.decodeParameter('uint256', results[10]),
-        ethBalance: web3.eth.abi.decodeParameter('uint256', results[11])
+        ethBalance: web3.eth.abi.decodeParameter('uint256', results[11]),
+        l1Fee: web3.eth.abi.decodeParameter('uint256', results[12])
     }
 }
 
@@ -246,10 +271,20 @@ function updateUI(values, tvlEth) {
     elem('#pendingBlockReward').textContent = minerReward/1e18
     elem('#pendingBlockWinner').textContent = formatSeconds(LAST_HYPERS_BLOCK_TIME)
 
-    // Update gas price
-    const gasPriceGwei = web3.utils.fromWei(values.gasPrice, 'gwei')
+    // Calculate total gas cost including L1 fee
+    const baseFee = web3.utils.toBN(values.baseFee)
+    const gasPrice = baseFee.add(baseFee.muln(6).divn(100))
+    const l1Fee = web3.utils.toBN(values.l1Fee)
+    const l2Fee = web3.utils.toBN(gasPrice.muln(25000000))
+    const totalGasCost = l2Fee.add(l1Fee)
+    //console.log('gasPrice', gasPrice.toString(), 'l1Fee', l1Fee.toString(), 'l2Fee', l2Fee.toString(), 'totalGasCost', totalGasCost.toString())
+    
+    // Update gas price display with L1 fee included
+    const gasPriceGwei = web3.utils.fromWei(gasPrice, 'gwei')
+    const totalGasCostEth = web3.utils.fromWei(totalGasCost, 'ether')
+    
     elem('#gasPrice').textContent = `${parseFloat(gasPriceGwei).toFixed(5)} Gwei`
-    elem('#gasPriceUsd').textContent = `$${(parseFloat(gasPriceGwei) * ETH_PRICE * 0.000000001 * 25000000).toFixed(3)}`
+    elem('#gasPriceUsd').textContent = `$${(parseFloat(totalGasCostEth) * ETH_PRICE).toFixed(3)}`
 }
 
 function formatTimeUntil(hours) {
@@ -909,6 +944,7 @@ async function init() {
         web3 = new Web3('https://rpc.blast.io')
         contract = new web3.eth.Contract(contractABI, HYPERS_ADDRESS)
         gasContract = new web3.eth.Contract(gasABI, GAS_HYPERS_ADDRESS)
+        l1GasContract = new web3.eth.Contract(GAS_CONTRACT_ABI, GAS_CONTRACT_ADDRESS)
         multicallContract = new web3.eth.Contract(multicallABI, MULTICALL_ADDRESS)
         batchMinersContract = new web3.eth.Contract(batchMinersABI, BATCH_MINERS_ADDRESS)
         const pendingBlock = createPendingBlockElement()
