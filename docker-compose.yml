@@ -5,9 +5,12 @@ services:
     image: busybox
     container_name: ethereum-blocks
     ports:
-      - "9997:80"
+      - "127.0.0.1:9997:80"
     volumes:
       - ./:/var/www:ro
+      # Hide the repo metadata from the web server (.git would otherwise be downloadable)
+      - type: tmpfs
+        target: /var/www/.git
     command: httpd -f -p 80 -h /var/www
     restart: unless-stopped
     logging:
